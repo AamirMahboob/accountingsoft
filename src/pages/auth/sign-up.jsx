@@ -113,7 +113,6 @@
 // }
 
 // export default SignUp;
-
 import React, { useState } from 'react';
 import {
   Card,
@@ -147,8 +146,8 @@ export function SignUp() {
         role: role,
       });
 
-      // Redirect to the dashboard or appropriate page after successful registration
-      navigate("/dashboard");
+      // Optionally show a success message here
+      console.log("User registered successfully!");
     } catch (error) {
       console.error("Error signing up:", error);
     }
@@ -218,10 +217,6 @@ export function SignUp() {
           <Button type="submit" className="mt-6" fullWidth>
              Add User
           </Button>
-          {/* <Typography variant="paragraph" className="text-center text-blue-gray-500 font-medium mt-4">
-            Already have an account?
-            <Link to="/auth/sign-in" className="text-gray-900 ml-1">Sign in</Link>
-          </Typography> */}
         </form>
       </div>
     </section>
@@ -229,4 +224,3 @@ export function SignUp() {
 }
 
 export default SignUp;
-
