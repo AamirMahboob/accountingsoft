@@ -18,6 +18,12 @@ import { MaterialTailwindControllerProvider } from "@/context";
 import "../public/css/tailwind.css";
 import { AuthProvider } from "./context/AuthContext";
 
+// if (process.env.NODE_ENV === 'production') {
+//   const script = document.createElement('script');
+//   script.src = "https://api.nepcha.com/js/nepcha-analytics.js";
+//   script.async = true;
+//   document.getElementById('analytics-script-placeholder').replaceWith(script);
+// }
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

@@ -45,10 +45,32 @@
 
 // firebaseConfig.js
 
+// import { initializeApp } from "firebase/app";
+// // import { getAnalytics } from "firebase/analytics";
+// import { getAuth } from "firebase/auth";
+// import { getFirestore } from "firebase/firestore"; // Import Firestore
+
+// const firebaseConfig = {
+//   apiKey: "AIzaSyB1xL_p_p5mMIs7E8aiWWTBBitJg1XqrKw",
+//   authDomain: "accounting-soft-b4d89.firebaseapp.com",
+//   projectId: "accounting-soft-b4d89",
+//   storageBucket: "accounting-soft-b4d89.appspot.com",
+//   messagingSenderId: "491595000911",
+//   appId: "1:491595000911:web:acba5a01427607cf024e3a",
+//   measurementId: "G-TVWHXH5BZD"
+// };
+
+// // Initialize Firebase
+// const app = initializeApp(firebaseConfig);
+// // const analytics = getAnalytics(app);
+// export const auth = getAuth(app);
+// export const db = getFirestore(app); // Export Firestore
+
+// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, isSupported } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore"; // Import Firestore
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB1xL_p_p5mMIs7E8aiWWTBBitJg1XqrKw",
@@ -62,6 +84,16 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+
+// Conditionally initialize Analytics
+// let analytics;
+// if (process.env.NODE_ENV === 'production') {
+//   isSupported().then((supported) => {
+//     if (supported) {
+//       analytics = getAnalytics(app);
+//     }
+//   });
+// }
+
 export const auth = getAuth(app);
-export const db = getFirestore(app); // Export Firestore
+export const db = getFirestore(app);
