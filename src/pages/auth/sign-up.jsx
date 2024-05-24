@@ -127,6 +127,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../../firebaseConfig"; // Adjust the path as necessary
 import { doc, setDoc } from "firebase/firestore";
+import { toast } from 'react-toastify';
 
 export function SignUp() {
   const [email, setEmail] = useState("");
@@ -148,19 +149,21 @@ export function SignUp() {
 
       // Optionally show a success message here
       console.log("User registered successfully!");
+      toast.success("User registered successfully!")
     } catch (error) {
       console.error("Error signing up:", error);
+      toast.error(error.message)
     }
   };
 
   return (
-    <section className="m-8 flex">
+    <section className="m-8 flex justify-start items-start">
       <div className="w-full lg:w-3/5 flex flex-col items-center justify-center">
-        <div className="text-center">
-          <Typography variant="h2" className="font-bold mb-4">Join Us Today</Typography>
-          <Typography variant="paragraph" color="blue-gray" className="text-lg font-normal">Enter your email, password, and role to register.</Typography>
+        <div >
+          <Typography variant="h2" className="font-bold mb-4">Add User</Typography>
+          <Typography variant="paragraph" color="blue-gray" className="text-lg font-normal">Enter your email, password, and role to register user.</Typography>
         </div>
-        <form onSubmit={handleSignUp} className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2">
+        <form onSubmit={handleSignUp} className="mt-8 mb-2  ml-11 mx-auto w-80 max-w-screen-lg lg:w-1/2">
           <div className="mb-1 flex flex-col gap-6">
             <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
               Your email

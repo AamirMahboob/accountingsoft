@@ -83,7 +83,7 @@ export function DashboardNavbar() {
           >
             <Bars3Icon strokeWidth={3} className="h-6 w-6 text-blue-gray-500" />
           </IconButton>
-          <Link to="/auth/sign-in">
+          {/* <Link to="/auth/sign-in">
             <Button
               variant="text"
               color="blue-gray"
@@ -99,11 +99,11 @@ export function DashboardNavbar() {
             >
               <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
             </IconButton>
-          </Link>
+          </Link> */}
           <Menu>
             <MenuHandler>
               <IconButton variant="text" color="blue-gray">
-                <BellIcon className="h-5 w-5 text-blue-gray-500" />
+                {/* <BellIcon className="h-5 w-5 text-blue-gray-500" /> */}
               </IconButton>
             </MenuHandler>
             <MenuList className="w-max border-0">

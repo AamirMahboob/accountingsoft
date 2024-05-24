@@ -9,7 +9,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebaseConfig"; // adjust the path as necessary
-
+import { toast } from 'react-toastify';
 export function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,9 +20,11 @@ export function SignIn() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       // Redirect to the dashboard after successful login
-      navigate("/dashboard");
+      toast.success("Successfully signed in!");
+      navigate("/dashboard/home");
     } catch (error) {
       console.error("Error signing in:", error);
+      toast.error("Error signing in: " + error.message);
     }
   };
 
