@@ -72,14 +72,16 @@ const ExpenseCard = () => {
             {editIndex !== null ? 'Edit Expense' : 'Add Expense'}
           </Button>
         </div>
-        <Select label="Filter by Month" value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)}>
-          <Option value="">All</Option>
-          {[...Array(12).keys()].map((month) => (
-            <Option key={month + 1} value={month + 1}>
-              {new Date(0, month).toLocaleString('en-US', { month: 'long' })}
-            </Option>
-          ))}
-        </Select>
+        <div className="mb-4">
+          <Select label="Filter by Month" value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)}>
+            <Option value="">All</Option>
+            {[...Array(12).keys()].map((month) => (
+              <Option key={month + 1} value={month + 1}>
+                {new Date(0, month).toLocaleString('en-US', { month: 'long' })}
+              </Option>
+            ))}
+          </Select>
+        </div>
         <ul className="mt-4">
           {filteredExpenses.map((expense, index) => (
             <li key={index} className="flex justify-between mb-2">
