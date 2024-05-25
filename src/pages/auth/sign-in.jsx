@@ -59,7 +59,7 @@ export function SignIn() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <Checkbox
+          {/* <Checkbox
             label={
               <Typography
                 variant="small"
@@ -76,7 +76,7 @@ export function SignIn() {
               </Typography>
             }
             containerProps={{ className: "-ml-2.5" }}
-          />
+          /> */}
           <Button type="submit" className="mt-6" fullWidth>
             Sign In
           </Button>

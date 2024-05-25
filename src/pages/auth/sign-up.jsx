@@ -115,15 +115,13 @@
 // export default SignUp;
 import React, { useState } from 'react';
 import {
-  Card,
   Input,
-  Checkbox,
   Button,
   Typography,
   Select,
   Option,
 } from "@material-tailwind/react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../../firebaseConfig"; // Adjust the path as necessary
 import { doc, setDoc } from "firebase/firestore";
@@ -148,22 +146,22 @@ export function SignUp() {
       });
 
       // Optionally show a success message here
-      console.log("User registered successfully!");
-      toast.success("User registered successfully!")
+      console.log("User registered successfully with role:", role);
+      toast.success("User registered successfully!");
+      // navigate("/home"); // Redirect to the home page after successful registration
     } catch (error) {
       console.error("Error signing up:", error);
-      toast.error(error.message)
+      toast.error("Error signing up: " + error.message);
     }
   };
 
   return (
     <section className="m-8 flex justify-start items-start">
       <div className="w-full lg:w-3/5 flex flex-col items-center justify-center">
-        <div >
+        <div>
           <Typography variant="h2" className="font-bold mb-4">Add User</Typography>
-          <Typography variant="paragraph" color="blue-gray" className="text-lg font-normal">Enter your email, password, and role to register user.</Typography>
         </div>
-        <form onSubmit={handleSignUp} className="mt-8 mb-2  ml-11 mx-auto w-80 max-w-screen-lg lg:w-1/2">
+        <form onSubmit={handleSignUp} className="mt-8 mb-2 ml-11 mx-auto w-80 max-w-screen-lg lg:w-1/2">
           <div className="mb-1 flex flex-col gap-6">
             <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
               Your email
@@ -199,26 +197,8 @@ export function SignUp() {
               <Option value="admin">Admin</Option>
             </Select>
           </div>
-          <Checkbox
-            label={
-              <Typography
-                variant="small"
-                color="gray"
-                className="flex items-center justify-start font-medium"
-              >
-                I agree to the&nbsp;
-                <a
-                  href="#"
-                  className="font-normal text-black transition-colors hover:text-gray-900 underline"
-                >
-                  Terms and Conditions
-                </a>
-              </Typography>
-            }
-            containerProps={{ className: "-ml-2.5" }}
-          />
           <Button type="submit" className="mt-6" fullWidth>
-             Add User
+            Add User
           </Button>
         </form>
       </div>
