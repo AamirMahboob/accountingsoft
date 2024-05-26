@@ -1,6 +1,8 @@
 // IncomeCard.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardBody, Typography, Button, Input, Select, Option } from '@material-tailwind/react';
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { db } from '../../firebaseConfig'; // Adjust the import path as needed
 
 const IncomeCard = () => {
   const [incomes, setIncomes] = useState([]);
@@ -9,18 +11,39 @@ const IncomeCard = () => {
   const [amount, setAmount] = useState('');
   const [editIndex, setEditIndex] = useState(null);
   const [filterMonth, setFilterMonth] = useState('');
+  const [error, setError] = useState('');
 
-  const handleAddEditIncome = () => {
+  useEffect(() => {
+    const fetchIncomes = async () => {
+      const incomeCollection = collection(db, 'incomes');
+      const incomeSnapshot = await getDocs(incomeCollection);
+      const incomeList = incomeSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setIncomes(incomeList);
+    };
+
+    fetchIncomes();
+  }, []);
+
+  const handleAddEditIncome = async () => {
+    if (!description || !date || !amount) {
+      setError('All fields must be filled out');
+      return;
+    }
+
     const newIncome = { description, date, amount };
+    setError('');
 
     if (editIndex !== null) {
+      const incomeDoc = doc(db, 'incomes', incomes[editIndex].id);
+      await updateDoc(incomeDoc, newIncome);
       const updatedIncomes = incomes.map((income, index) =>
-        index === editIndex ? newIncome : income
+        index === editIndex ? { ...income, ...newIncome } : income
       );
       setIncomes(updatedIncomes);
       setEditIndex(null);
     } else {
-      setIncomes([...incomes, newIncome]);
+      const docRef = await addDoc(collection(db, 'incomes'), newIncome);
+      setIncomes([...incomes, { ...newIncome, id: docRef.id }]);
     }
 
     setDescription('');
@@ -36,7 +59,9 @@ const IncomeCard = () => {
     setEditIndex(index);
   };
 
-  const handleDelete = (index) => {
+  const handleDelete = async (index) => {
+    const incomeDoc = doc(db, 'incomes', incomes[index].id);
+    await deleteDoc(incomeDoc);
     const updatedIncomes = incomes.filter((_, i) => i !== index);
     setIncomes(updatedIncomes);
   };
@@ -47,31 +72,43 @@ const IncomeCard = () => {
 
   return (
     <Card>
-      <CardBody>
         <Typography variant="h5">Income</Typography>
-        <div className="flex space-x-4 mb-4">
+      <CardBody>
+      
+        <div className="flex  space-x-4 mb-4">
+           <div className='flex flex-col'> 
+           <Typography variant="h6">Description</Typography>
           <Input
             type="text"
             label="Description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
+           </div>
+           <div className='flex flex-col'>
+           <Typography variant="h6">Date</Typography>
           <Input
             type="date"
             label="Date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
-          <Input
+           </div>
+           <div className='flex flex-col'>
+            <Typography variant="h6">Amount</Typography>
+           <Input
             type="number"
             label="Amount"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
           />
-          <Button onClick={handleAddEditIncome}>
+           </div>
+          
+          <Button className='w-32 h-10 mt-6'  onClick={handleAddEditIncome}>
             {editIndex !== null ? 'Edit Income' : 'Add Income'}
           </Button>
         </div>
+        {error && <Typography color="red">{error}</Typography>}
         <div className="mb-4">
           <Select label="Filter by Month" value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)}>
             <Option value="">All</Option>
@@ -99,4 +136,3 @@ const IncomeCard = () => {
 };
 
 export default IncomeCard;
-
