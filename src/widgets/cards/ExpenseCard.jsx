@@ -1,9 +1,9 @@
-// ExpenseCard.jsx
 import React, { useState, useEffect } from 'react';
-import { Card, CardBody, Typography, Button, Input, Select, Option } from '@material-tailwind/react';
+import { Card, CardBody, Typography, Button, Input, Select, Option, Spinner } from '@material-tailwind/react';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig'; // Adjust the import path as needed
-
+import { MdDeleteOutline } from "react-icons/md";
+import { MdModeEdit } from "react-icons/md";
 const ExpenseCard = () => {
   const [expenses, setExpenses] = useState([]);
   const [description, setDescription] = useState('');
@@ -12,21 +12,26 @@ const ExpenseCard = () => {
   const [editIndex, setEditIndex] = useState(null);
   const [filterMonth, setFilterMonth] = useState('');
   const [error, setError] = useState('');
+  const [loader, setLoader] = useState(false);
 
   useEffect(() => {
     const fetchExpenses = async () => {
+      setLoader(true);
       const expenseCollection = collection(db, 'expenses');
       const expenseSnapshot = await getDocs(expenseCollection);
       const expenseList = expenseSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setExpenses(expenseList);
+      setLoader(false);
     };
 
     fetchExpenses();
   }, []);
 
   const handleAddEditExpense = async () => {
+    setLoader(true);
     if (!description || !date || !amount) {
       setError('All fields must be filled out');
+      setLoader(false);
       return;
     }
 
@@ -45,7 +50,7 @@ const ExpenseCard = () => {
       const docRef = await addDoc(collection(db, 'expenses'), newExpense);
       setExpenses([...expenses, { ...newExpense, id: docRef.id }]);
     }
-
+    setLoader(false);
     setDescription('');
     setDate('');
     setAmount('');
@@ -60,57 +65,63 @@ const ExpenseCard = () => {
   };
 
   const handleDelete = async (index) => {
+    setLoader(true);
     const expenseDoc = doc(db, 'expenses', expenses[index].id);
     await deleteDoc(expenseDoc);
     const updatedExpenses = expenses.filter((_, i) => i !== index);
     setExpenses(updatedExpenses);
+    setLoader(false);
   };
 
-  const filteredExpenses = expenses.filter((expense) =>
-    filterMonth ? new Date(expense.date).getMonth() + 1 === parseInt(filterMonth) : true
-  );
+  const handleFilterChange = (e) => {
+    setFilterMonth(e);
+  };
+
+  const filteredExpenses = expenses.filter((expense) => {
+    if (!filterMonth) return true;
+    const expenseDate = new Date(expense.date);
+    return expenseDate.getMonth() + 1 === parseInt(filterMonth);
+  });
 
   return (
-    <Card>
+    <Card className='flex flex-col gap-4 bg-[#F6F7F8] '>
+      <CardBody className='border border-black rounded-md bg-white'>
         <Typography variant="h5">Expenses</Typography>
-
-      <CardBody>
-        <div className="flex space-x-4 mb-4">
-        <div className='flex flex-col'>
-        <Typography variant="h6">Description</Typography>
-          
-          <Input
-            type="text"
-            label="Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
-          <div className='flex flex-col'>
-          <Typography variant="h6">Date</Typography>
-          <Input
-            type="date"
-            label="Date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
+        <div className="flex space-x-4 mb-4 mt-5">
+          <div className="flex flex-col">
+            <Typography variant="h6">Description</Typography>
+            <Input
+              type="text"
+              label="Description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
           </div>
-          <div className='flex flex-col'>
+          <div className="flex flex-col">
+            <Typography variant="h6">Date</Typography>
+            <Input
+              type="date"
+              label="Date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col">
             <Typography variant="h6">Amount</Typography>
-          <Input
-            type="number"
-            label="Amount"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
+            <Input
+              type="number"
+              label="Amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
           </div>
-          <Button className='w-32 h-10 mt-6' onClick={handleAddEditExpense}>
+          <Button className="w-32 h-10 mt-6" onClick={handleAddEditExpense}>
             {editIndex !== null ? 'Edit Expense' : 'Add Expense'}
           </Button>
         </div>
         {error && <Typography color="red">{error}</Typography>}
         <div className="mb-4">
-          <Select label="Filter by Month" value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)}>
+          <Select label="Filter by Month" value={filterMonth} onChange={(e) => handleFilterChange(e)}>
             <Option value="">All</Option>
             {[...Array(12).keys()].map((month) => (
               <Option key={month + 1} value={month + 1}>
@@ -119,18 +130,47 @@ const ExpenseCard = () => {
             ))}
           </Select>
         </div>
-        <ul className="mt-4">
-          {filteredExpenses.map((expense, index) => (
-            <li key={index} className="flex justify-between mb-2">
-              <span>{expense.description}</span>
-              <span>{expense.date}</span>
-              <span>{expense.amount}</span>
-              <Button size="sm" onClick={() => handleEdit(index)}>Edit</Button>
-              <Button size="sm" onClick={() => handleDelete(index)}>Delete</Button>
-            </li>
-          ))}
-        </ul>
       </CardBody>
+    <CardBody className='border border-black rounded-md bg-white'>
+    <Typography variant="h6">Expense Table</Typography>
+
+    {loader ? (
+        <div className="flex justify-center items-center py-4 ">
+          <Typography variant="h6"><Spinner /></Typography>
+
+        </div>
+      ) : (
+        <table className="w-full">
+          <thead>
+            <tr>
+              <th className="px-6 py-3 text-left">Description</th>
+              <th className="px-6 py-3 text-left">Date</th>
+              <th className="px-6 py-3 text-left">Amount</th>
+              <th className="px-6 py-3 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredExpenses.length > 0 ? (
+              filteredExpenses.map((expense, index) => (
+                <tr key={index} className="border-b border-gray-200">
+                  <td className="px-6 py-4">{expense.description}</td>
+                  <td className="px-6 py-4">{expense.date}</td>
+                  <td className="px-6 py-4">{expense.amount}</td>
+                  <td className="px-6 ">
+                    <Button size="sm" className='mr-5 ' onClick={() => handleEdit(index)}><MdModeEdit size={20}/></Button>
+                    <Button size="sm" className='bg-red-500' onClick={() => handleDelete(index)}><MdDeleteOutline size={20} /></Button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" className="px-6 py-4 text-center">No records found</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      )}
+    </CardBody>
     </Card>
   );
 };
