@@ -38,7 +38,7 @@ export function DashboardNavbar() {
       className={`rounded-xl transition-all ${
         fixedNavbar
           ? "sticky top-4 z-40 py-3 shadow-md shadow-blue-gray-500/5"
-          : "px-0 py-1"
+          : "px-0 py-1" 
       }`}
       fullWidth
       blurred={fixedNavbar}

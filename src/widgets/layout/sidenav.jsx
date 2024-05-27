@@ -33,7 +33,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
             variant="h6"
             color={sidenavType === "dark" ? "white" : "blue-gray"}
           >
-            {brandName}
+             Account Management Software
           </Typography>
         </Link>
         <IconButton

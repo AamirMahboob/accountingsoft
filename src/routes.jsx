@@ -18,12 +18,12 @@ export const routes = [
   {
     layout: "dashboard",
     pages: [
-      {
-        icon: <HomeIcon {...icon} />,
-        name: "dashboard",
-        path: "/home",
-        element: <Home />,
-      },
+      // {
+      //   icon: <HomeIcon {...icon} />,
+      //   name: "dashboard",
+      //   path: "/home",
+      //   element: <Profile />,
+      // },
       {
         icon: <RectangleStackIcon {...icon} />,
         name: "Expense and Income",

@@ -21,7 +21,7 @@ export function SignIn() {
       await signInWithEmailAndPassword(auth, email, password);
       // Redirect to the dashboard after successful login
       toast.success("Successfully signed in!");
-      navigate("/dashboard/home");
+      navigate("/dashboard/expenseandincome");
     } catch (error) {
       console.error("Error signing in:", error);
       toast.error("Error signing in: " + error.message);
