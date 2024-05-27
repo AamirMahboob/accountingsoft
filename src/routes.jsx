@@ -25,15 +25,16 @@ export const routes = [
         element: <Home />,
       },
       {
-        icon: <UserCircleIcon {...icon} />,
+        icon: <RectangleStackIcon {...icon} />,
         name: "Expense and Income",
-        path: "/profile",
+        path: "/expenseandincome",
         element: <Profile />,
       },
       {
-        icon: <RectangleStackIcon {...icon} />,
+        icon:<UserCircleIcon {...icon} /> ,
+        
         name: "Add User",
-        path: "/sign-up",
+        path: "/adduser",
         element: <SignUp />,
       },
       {
