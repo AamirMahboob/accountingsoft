@@ -120,7 +120,11 @@ const ExpenseCard = () => {
           </Button>
         </div>
         {error && <Typography color="red">{error}</Typography>}
-        <div className="mb-4">
+        
+      </CardBody>
+    <CardBody className='border border-black rounded-md bg-white'>
+    <Typography variant="h6">Expense Table</Typography>
+    <div className="mb-4 w-10 mt-4">
           <Select label="Filter by Month" value={filterMonth} onChange={(e) => handleFilterChange(e)}>
             <Option value="">All</Option>
             {[...Array(12).keys()].map((month) => (
@@ -130,10 +134,6 @@ const ExpenseCard = () => {
             ))}
           </Select>
         </div>
-      </CardBody>
-    <CardBody className='border border-black rounded-md bg-white'>
-    <Typography variant="h6">Expense Table</Typography>
-
     {loader ? (
         <div className="flex justify-center items-center py-4 ">
           <Typography variant="h6"><Spinner /></Typography>
