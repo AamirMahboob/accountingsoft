@@ -10,7 +10,9 @@ function App() {
    const {currentUser} = useAuth()
    const navigate =  useNavigate()
    useEffect(() => {
-    if (currentUser) {
+    // Redirect to dashboard/expenseandincome if the user is authenticated
+    // and they are not already on a protected route
+    if (currentUser && window.location.pathname === '/auth/sign-in') {
       navigate('/dashboard/expenseandincome');
     }
   }, [currentUser, navigate]);
