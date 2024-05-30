@@ -4,7 +4,7 @@ import { Card, CardBody, Typography, Button, Input } from '@material-tailwind/re
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig'; // Adjust the import path as needed
 
-export function Home() {
+const AddCustomer = () => {
   const [customers, setCustomers] = useState([]);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -76,7 +76,7 @@ export function Home() {
 
   return (
     <Card>
-      <Typography variant="h5">Customers</Typography>
+      {/* <Typography variant="h5">Customers</Typography>
       <CardBody>
         <div className="flex space-x-4 mb-4">
           <div className="flex flex-col">
@@ -149,9 +149,9 @@ export function Home() {
             </tbody>
           </table>
         )}
-      </CardBody>
+      </CardBody> */}
     </Card>
   );
 };
 
-export default Home;
+export default AddCustomer;

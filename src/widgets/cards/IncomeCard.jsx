@@ -85,7 +85,9 @@ const IncomeCard = () => {
     const incomeDate = new Date(income.date);
     return incomeDate.getMonth() + 1 === parseInt(filterMonth);
   });
-
+  const calculateTotalAmount = () => {
+    return filteredIncomes.reduce((total, expense) => total + parseFloat(expense.amount), 0).toFixed(2);
+  };
   return (
     <Card className='flex flex-col gap-4 bg-[#F6F7F8] '>
       <CardBody className='border border-black rounded-md bg-white'>
@@ -127,6 +129,7 @@ const IncomeCard = () => {
       </CardBody>
       <CardBody className='border border-black rounded-md bg-white' >
       <Typography variant="h6" >Income Table</Typography>
+     <div className='flex justify-between'>
       <div className="mb-4 w-10 mt-4">
           <Select label="Filter by Month" value={filterMonth} onChange={(e) => handleFilterChange(e)}>
             <Option value="">All</Option>
@@ -136,6 +139,8 @@ const IncomeCard = () => {
               </Option>
             ))}
           </Select>
+        </div>
+        <Typography variant='h6' className='mr-10'>Total Amount:${calculateTotalAmount()}</Typography>
         </div>
       {loader ? (
         <div className="flex justify-center items-center py-4">

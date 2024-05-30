@@ -9,6 +9,8 @@ import {
 import { Home, Profile, Tables, Notifications } from "@/pages/dashboard";
 import { SignIn, SignUp } from "@/pages/auth";
 import Logout from "./pages/auth/log-out";
+import Invoices from "./pages/dashboard/Invoices";
+import InvoicesManagement from "./pages/dashboard/remindus";
 
 const icon = {
   className: "w-5 h-5 text-inherit",
@@ -18,12 +20,12 @@ export const routes = [
   {
     layout: "dashboard",
     pages: [
-      // {
-      //   icon: <HomeIcon {...icon} />,
-      //   name: "dashboard",
-      //   path: "/home",
-      //   element: <Profile />,
-      // },
+      {
+        icon: <HomeIcon {...icon} />,
+        name: "dashboard",
+        path: "/home",
+        element: <Home />,
+      },
       {
         icon: <RectangleStackIcon {...icon} />,
         name: "Expense and Income",
@@ -43,18 +45,31 @@ export const routes = [
         path: "/tables",
         element: <Tables />,
       },
-      // {
-      //   icon: <InformationCircleIcon {...icon} />,
-      //   name: "notifications",
-      //   path: "/notifications",
-      //   element: <Notifications />,
-      // },
+      {
+        icon: <InformationCircleIcon {...icon} />,
+        name: "Salary Manager",
+        path: "/slaryslips",
+        element: <Notifications />,
+      },
+      {
+        icon: <InformationCircleIcon {...icon} />,
+        name: "Invoices",
+        path: "/invoices",
+        element: <Invoices />,
+      },
+      {
+        icon: <InformationCircleIcon {...icon} />,
+        name: "Remind us",
+        path: "/remindus",
+        element: <InvoicesManagement />,
+      },
       {
         icon: <InformationCircleIcon {...icon} />,
         name: "logout",
         path: "/logout",
         element: <Logout />,
-      }
+      },
+    
     ],
   },
   {
