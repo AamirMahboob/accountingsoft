@@ -127,8 +127,9 @@ export function Notifications() {
   };
 
   const handleFileChange = (e) => {
-    const files = Array.from(e.target.files).map(file => URL.createObjectURL(file));
-    setProofs(files);
+    const files = Array.from(e.target.files);
+    const fileNames = files.map(file => file.name); // Extract file names or other relevant information
+    setProofs(fileNames); // Update state with extracted information
   };
 
   const handleDeleteProof = (index) => {
@@ -209,7 +210,7 @@ export function Notifications() {
           <Input label="Month" value={month} onChange={(e) => setMonth(e.target.value)} />
           <Input label="Year" value={year} onChange={(e) => setYear(e.target.value)} />
           </div>
-          <div className='flex gap-10 m-3'>
+          <div className='flex gap-10 m-3'> 
           <Input label="Basic Salary" value={basicSalary} onChange={(e) => setBasicSalary(e.target.value)} />
           <Input label="Allowances" value={allowances} onChange={(e) => setAllowances(e.target.value)} />
           </div>
@@ -231,7 +232,7 @@ export function Notifications() {
             <Typography>No Proofs</Typography>
           )}
         </DialogBody>
-        <DialogFooter className='flex gap-4'>
+        <DialogFooter>
           <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
           <Button onClick={handleAddEditSalarySlip}>Save</Button>
         </DialogFooter>
