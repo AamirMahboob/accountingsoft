@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardBody, Typography, Button, Input, Select, Option } from '@material-tailwind/react';
+import {
+  Card,
+  CardBody,
+  Typography,
+  Button,
+  Input,
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  DialogFooter
+} from '@material-tailwind/react';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
+import { FaEdit, FaTrash, FaPrint, FaEye } from 'react-icons/fa';
+
 export function Notifications() {
   const [salarySlips, setSalarySlips] = useState([]);
   const [employeeName, setEmployeeName] = useState('');
@@ -12,9 +24,11 @@ export function Notifications() {
   const [allowances, setAllowances] = useState('');
   const [deductions, setDeductions] = useState('');
   const [netSalary, setNetSalary] = useState('');
+  const [proofs, setProofs] = useState([]);
   const [editIndex, setEditIndex] = useState(null);
   const [error, setError] = useState('');
   const [loader, setLoader] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
 
   useEffect(() => {
     const fetchSalarySlips = async () => {
@@ -36,7 +50,7 @@ export function Notifications() {
     }
 
     setLoader(true);
-    const newSalarySlip = { employeeName, employeeID, month, year, basicSalary, allowances, deductions, netSalary };
+    const newSalarySlip = { employeeName, employeeID, month, year, basicSalary, allowances, deductions, netSalary, proofs };
     setError('');
 
     if (editIndex !== null) {
@@ -60,6 +74,8 @@ export function Notifications() {
     setAllowances('');
     setDeductions('');
     setNetSalary('');
+    setProofs([]);
+    setOpenDialog(false);
   };
 
   const handleEdit = (index) => {
@@ -72,7 +88,9 @@ export function Notifications() {
     setAllowances(salarySlip.allowances);
     setDeductions(salarySlip.deductions);
     setNetSalary(salarySlip.netSalary);
+    setProofs(salarySlip.proofs || []);
     setEditIndex(index);
+    setOpenDialog(true);
   };
 
   const handleDelete = async (index) => {
@@ -97,95 +115,32 @@ export function Notifications() {
     printWindow.document.write(`<p>Allowances: ${salarySlip.allowances}</p>`);
     printWindow.document.write(`<p>Deductions: ${salarySlip.deductions}</p>`);
     printWindow.document.write(`<p>Net Salary: ${salarySlip.netSalary}</p>`);
+    if (salarySlip.proofs && salarySlip.proofs.length > 0) {
+      printWindow.document.write(`<h2>Proofs</h2>`);
+      salarySlip.proofs.forEach((proof, index) => {
+        printWindow.document.write(`<p>${index + 1}. ${proof}</p>`);
+      });
+    }
     printWindow.document.write(`</body></html>`);
     printWindow.document.close();
     printWindow.print();
+  };
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files).map(file => URL.createObjectURL(file));
+    setProofs(files);
+  };
+
+  const handleDeleteProof = (index) => {
+    const updatedProofs = proofs.filter((_, i) => i !== index);
+    setProofs(updatedProofs);
   };
 
   return (
     <Card>
       <Typography variant="h5">Salary Slips</Typography>
       <CardBody className='overflow-y-hidden'>
-        <div className="flex space-x-4 mb-4">
-          <div className="flex flex-col">
-            <Typography variant="h6">Employee Name</Typography>
-            <Input
-              type="text"
-              label="Employee Name"
-              value={employeeName}
-              onChange={(e) => setEmployeeName(e.target.value)}
-            />
-          </div>
-          <div className="flex flex-col">
-            <Typography variant="h6">Employee ID</Typography>
-            <Input
-              type="text"
-              label="Employee ID"
-              value={employeeID}
-              onChange={(e) => setEmployeeID(e.target.value)}
-            />
-          </div>
-          <div className="flex flex-col">
-            <Typography variant="h6">Month</Typography>
-            <Input
-              type="text"
-              label="Month"
-              value={month}
-              onChange={(e) => setMonth(e.target.value)}
-            />
-          </div>
-          <div className="flex flex-col">
-            <Typography variant="h6">Year</Typography>
-            <Input
-              type="text"
-              label="Year"
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
-            />
-          </div>
-        </div>
-        <div className="flex space-x-4 mb-4">
-          <div className="flex flex-col">
-            <Typography variant="h6">Basic Salary</Typography>
-            <Input
-              type="number"
-              label="Basic Salary"
-              value={basicSalary}
-              onChange={(e) => setBasicSalary(e.target.value)}
-            />
-          </div>
-          <div className="flex flex-col">
-            <Typography variant="h6">Allowances</Typography>
-            <Input
-              type="number"
-              label="Allowances"
-              value={allowances}
-              onChange={(e) => setAllowances(e.target.value)}
-            />
-          </div>
-          <div className="flex flex-col">
-            <Typography variant="h6">Deductions</Typography>
-            <Input
-              type="number"
-              label="Deductions"
-              value={deductions}
-              onChange={(e) => setDeductions(e.target.value)}
-            />
-          </div>
-          <div className="flex flex-col">
-            <Typography variant="h6">Net Salary</Typography>
-            <Input
-              type="number"
-              label="Net Salary"
-              value={netSalary}
-              onChange={(e) => setNetSalary(e.target.value)}
-            />
-          </div>
-          <Button className="w-32 h-10 mt-6" onClick={handleAddEditSalarySlip}>
-            {editIndex !== null ? 'Edit Salary Slip' : 'Add Salary Slip'}
-          </Button>
-        </div>
-        {error && <Typography color="red">{error}</Typography>}
+        <Button className="mb-4" onClick={() => setOpenDialog(true)}>Add Salary Slip</Button>
         {loader ? (
           <Typography>Loading...</Typography>
         ) : (
@@ -200,6 +155,7 @@ export function Notifications() {
                 <th className="px-6 py-3 text-left">Allowances</th>
                 <th className="px-6 py-3 text-left">Deductions</th>
                 <th className="px-6 py-3 text-left">Net Salary</th>
+                <th className="px-6 py-3 text-left">Proofs</th>
                 <th className="px-6 py-3"></th>
               </tr>
             </thead>
@@ -215,9 +171,24 @@ export function Notifications() {
                   <td className="px-6 py-4">{slip.deductions}</td>
                   <td className="px-6 py-4">{slip.netSalary}</td>
                   <td className="px-6 py-4">
-                    <Button size="sm" onClick={() => handleEdit(index)}>Edit</Button>
-                    <Button size="sm" onClick={() => handleDelete(index)}>Delete</Button>
-                    <Button size="sm" onClick={() => handlePrint(index)}>Print</Button>
+                    {slip.proofs && slip.proofs.length > 0 ? (
+                      <ul>
+                        {slip.proofs.map((proof, proofIndex) => (
+                          <li key={proofIndex}>
+                            <Button className="flex items-center" onClick={() => window.open(proof, '_blank')}>
+                              <FaEye className="mr-2" /> View Proof
+                            </Button>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      'No Proofs'
+                    )}
+                  </td>
+                  <td className="px-6 py-4 flex">
+                    <FaEdit color='green' className='mr-5 cursor-pointer' onClick={() => handleEdit(index)} />
+                    <FaTrash color='red' className='mr-5 cursor-pointer' onClick={() => handleDelete(index)} />
+                    <FaPrint color='blue' className='cursor-pointer' onClick={() => handlePrint(index)} />
                   </td>
                 </tr>
               ))}
@@ -225,8 +196,40 @@ export function Notifications() {
           </table>
         )}
       </CardBody>
+
+      <Dialog open={openDialog} handler={setOpenDialog}>
+        <DialogHeader>{editIndex !== null ? 'Edit Salary Slip' : 'Add Salary Slip'}</DialogHeader>
+        <DialogBody>
+          {error && <Typography color="red">{error}</Typography>}
+          <Input label="Employee Name" value={employeeName} onChange={(e) => setEmployeeName(e.target.value)} />
+          <Input label="Employee ID" value={employeeID} onChange={(e) => setEmployeeID(e.target.value)} />
+          <Input label="Month" value={month} onChange={(e) => setMonth(e.target.value)} />
+          <Input label="Year" value={year} onChange={(e) => setYear(e.target.value)} />
+          <Input label="Basic Salary" value={basicSalary} onChange={(e) => setBasicSalary(e.target.value)} />
+          <Input label="Allowances" value={allowances} onChange={(e) => setAllowances(e.target.value)} />
+          <Input label="Deductions" value={deductions} onChange={(e) => setDeductions(e.target.value)} />
+          <Input label="Net Salary" value={netSalary} onChange={(e) => setNetSalary(e.target.value)} />
+          <input type="file" multiple onChange={handleFileChange} className="my-4" />
+          <Typography>Uploaded Proofs:</Typography>
+          {proofs.length > 0 ? (
+            <ul>
+              {proofs.map((proof, index) => (
+                <li key={index}>
+                  {proof} <FaTrash color='red' className='cursor-pointer inline' onClick={() => handleDeleteProof(index)} />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <Typography>No Proofs</Typography>
+          )}
+        </DialogBody>
+        <DialogFooter>
+          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+          <Button onClick={handleAddEditSalarySlip}>Save</Button>
+        </DialogFooter>
+      </Dialog>
     </Card>
   );
-};
+}
 
 export default Notifications;
