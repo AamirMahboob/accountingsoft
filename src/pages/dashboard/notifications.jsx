@@ -115,12 +115,12 @@ export function Notifications() {
     printWindow.document.write(`<p>Allowances: ${salarySlip.allowances}</p>`);
     printWindow.document.write(`<p>Deductions: ${salarySlip.deductions}</p>`);
     printWindow.document.write(`<p>Net Salary: ${salarySlip.netSalary}</p>`);
-    if (salarySlip.proofs && salarySlip.proofs.length > 0) {
-      printWindow.document.write(`<h2>Proofs</h2>`);
-      salarySlip.proofs.forEach((proof, index) => {
-        printWindow.document.write(`<p>${index + 1}. ${proof}</p>`);
-      });
-    }
+    // if (salarySlip.proofs && salarySlip.proofs.length > 0) {
+    //   printWindow.document.write(`<h2>Proofs</h2>`);
+    //   salarySlip.proofs.forEach((proof, index) => {
+    //     printWindow.document.write(`<p>${index + 1}. ${proof}</p>`);
+    //   });
+    // }
     printWindow.document.write(`</body></html>`);
     printWindow.document.close();
     printWindow.print();
@@ -138,7 +138,7 @@ export function Notifications() {
 
   return (
     <Card>
-      <Typography variant="h5">Salary Slips</Typography>
+      <Typography variant="h5" className='m-3'>Salary Slips</Typography>
       <CardBody className='overflow-y-hidden'>
         <Button className="mb-4" onClick={() => setOpenDialog(true)}>Add Salary Slip</Button>
         {loader ? (
@@ -172,12 +172,12 @@ export function Notifications() {
                   <td className="px-6 py-4">{slip.netSalary}</td>
                   <td className="px-6 py-4">
                     {slip.proofs && slip.proofs.length > 0 ? (
-                      <ul>
+                      <ul className='flex'>
                         {slip.proofs.map((proof, proofIndex) => (
                           <li key={proofIndex}>
-                            <Button className="flex items-center" onClick={() => window.open(proof, '_blank')}>
-                              <FaEye className="mr-2" /> View Proof
-                            </Button>
+                            
+                              <FaEye className="mr-2"  onClick={() => window.open(proof, '_blank')}/> View Proof
+                             
                           </li>
                         ))}
                       </ul>
@@ -201,14 +201,22 @@ export function Notifications() {
         <DialogHeader>{editIndex !== null ? 'Edit Salary Slip' : 'Add Salary Slip'}</DialogHeader>
         <DialogBody>
           {error && <Typography color="red">{error}</Typography>}
+          <div className='flex gap-10 m-3'>
           <Input label="Employee Name" value={employeeName} onChange={(e) => setEmployeeName(e.target.value)} />
           <Input label="Employee ID" value={employeeID} onChange={(e) => setEmployeeID(e.target.value)} />
+          </div>
+          <div className='flex gap-10 m-3'>
           <Input label="Month" value={month} onChange={(e) => setMonth(e.target.value)} />
           <Input label="Year" value={year} onChange={(e) => setYear(e.target.value)} />
+          </div>
+          <div className='flex gap-10 m-3'>
           <Input label="Basic Salary" value={basicSalary} onChange={(e) => setBasicSalary(e.target.value)} />
           <Input label="Allowances" value={allowances} onChange={(e) => setAllowances(e.target.value)} />
+          </div>
+          <div className='flex gap-10 m-3'>
           <Input label="Deductions" value={deductions} onChange={(e) => setDeductions(e.target.value)} />
           <Input label="Net Salary" value={netSalary} onChange={(e) => setNetSalary(e.target.value)} />
+          </div>
           <input type="file" multiple onChange={handleFileChange} className="my-4" />
           <Typography>Uploaded Proofs:</Typography>
           {proofs.length > 0 ? (
@@ -223,7 +231,7 @@ export function Notifications() {
             <Typography>No Proofs</Typography>
           )}
         </DialogBody>
-        <DialogFooter>
+        <DialogFooter className='flex gap-4'>
           <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
           <Button onClick={handleAddEditSalarySlip}>Save</Button>
         </DialogFooter>
