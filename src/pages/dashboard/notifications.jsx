@@ -10,25 +10,39 @@ import {
   DialogBody,
   DialogFooter
 } from '@material-tailwind/react';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '../../firebaseConfig';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../../firebaseConfig';
 import { FaEdit, FaTrash, FaPrint, FaEye } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+
+// Validation schema
+const schema = yup.object().shape({
+  employeeName: yup.string().required('Employee Name is required'),
+  employeeID: yup.string().required('Employee ID is required'),
+  month: yup.string().required('Month is required'),
+  year: yup.string().required('Year is required'),
+  basicSalary: yup.number().required('Basic Salary is required'),
+  allowances: yup.number().required('Allowances are required'),
+  deductions: yup.number().required('Deductions are required'),
+  netSalary: yup.number().required('Net Salary is required'),
+});
 
 export function Notifications() {
   const [salarySlips, setSalarySlips] = useState([]);
-  const [employeeName, setEmployeeName] = useState('');
-  const [employeeID, setEmployeeID] = useState('');
-  const [month, setMonth] = useState('');
-  const [year, setYear] = useState('');
-  const [basicSalary, setBasicSalary] = useState('');
-  const [allowances, setAllowances] = useState('');
-  const [deductions, setDeductions] = useState('');
-  const [netSalary, setNetSalary] = useState('');
   const [proofs, setProofs] = useState([]);
   const [editIndex, setEditIndex] = useState(null);
-  const [error, setError] = useState('');
   const [loader, setLoader] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
+  const [openImageDialog, setOpenImageDialog] = useState(false);
+  const [selectedProof, setSelectedProof] = useState(null);
+
+  const { control, handleSubmit, reset, formState: { errors } } = useForm({
+    resolver: yupResolver(schema)
+  });
 
   useEffect(() => {
     const fetchSalarySlips = async () => {
@@ -43,15 +57,22 @@ export function Notifications() {
     fetchSalarySlips();
   }, []);
 
-  const handleAddEditSalarySlip = async () => {
-    if (!employeeName || !employeeID || !month || !year || !basicSalary || !allowances || !deductions || !netSalary) {
-      setError('All fields must be filled out');
-      return;
+  const handleAddEditSalarySlip = async (data) => {
+    setLoader(true);
+    let proofURLs = [];
+
+    // Upload proofs to Firebase Storage and get URLs
+    for (const proof of proofs) {
+      const proofRef = ref(storage, `proofs/${proof.name}`);
+      const snapshot = await uploadBytes(proofRef, proof);
+      const url = await getDownloadURL(snapshot.ref);
+      proofURLs.push(url);
     }
 
-    setLoader(true);
-    const newSalarySlip = { employeeName, employeeID, month, year, basicSalary, allowances, deductions, netSalary, proofs };
-    setError('');
+    const newSalarySlip = {
+      ...data,
+      proofs: proofURLs
+    };
 
     if (editIndex !== null) {
       const salarySlipDoc = doc(db, 'salarySlips', salarySlips[editIndex].id);
@@ -65,30 +86,27 @@ export function Notifications() {
       const docRef = await addDoc(collection(db, 'salarySlips'), newSalarySlip);
       setSalarySlips([...salarySlips, { ...newSalarySlip, id: docRef.id }]);
     }
+    toast.success("Added Successfully")
     setLoader(false);
-    setEmployeeName('');
-    setEmployeeID('');
-    setMonth('');
-    setYear('');
-    setBasicSalary('');
-    setAllowances('');
-    setDeductions('');
-    setNetSalary('');
+    reset();
     setProofs([]);
     setOpenDialog(false);
   };
 
   const handleEdit = (index) => {
     const salarySlip = salarySlips[index];
-    setEmployeeName(salarySlip.employeeName);
-    setEmployeeID(salarySlip.employeeID);
-    setMonth(salarySlip.month);
-    setYear(salarySlip.year);
-    setBasicSalary(salarySlip.basicSalary);
-    setAllowances(salarySlip.allowances);
-    setDeductions(salarySlip.deductions);
-    setNetSalary(salarySlip.netSalary);
-    setProofs(salarySlip.proofs || []);
+    reset({
+      employeeName: salarySlip.employeeName,
+      employeeID: salarySlip.employeeID,
+      month: salarySlip.month,
+      year: salarySlip.year,
+      basicSalary: salarySlip.basicSalary,
+      allowances: salarySlip.allowances,
+      deductions: salarySlip.deductions,
+      netSalary: salarySlip.netSalary,
+    });
+    toast.success("Update Successfully")
+    setProofs([]);
     setEditIndex(index);
     setOpenDialog(true);
   };
@@ -99,6 +117,7 @@ export function Notifications() {
     await deleteDoc(salarySlipDoc);
     const updatedSalarySlips = salarySlips.filter((_, i) => i !== index);
     setSalarySlips(updatedSalarySlips);
+    toast.success("Deleted Successfully")
     setLoader(false);
   };
 
@@ -115,26 +134,23 @@ export function Notifications() {
     printWindow.document.write(`<p>Allowances: ${salarySlip.allowances}</p>`);
     printWindow.document.write(`<p>Deductions: ${salarySlip.deductions}</p>`);
     printWindow.document.write(`<p>Net Salary: ${salarySlip.netSalary}</p>`);
-    // if (salarySlip.proofs && salarySlip.proofs.length > 0) {
-    //   printWindow.document.write(`<h2>Proofs</h2>`);
-    //   salarySlip.proofs.forEach((proof, index) => {
-    //     printWindow.document.write(`<p>${index + 1}. ${proof}</p>`);
-    //   });
-    // }
     printWindow.document.write(`</body></html>`);
     printWindow.document.close();
     printWindow.print();
   };
 
   const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    const fileNames = files.map(file => file.name); // Extract file names or other relevant information
-    setProofs(fileNames); // Update state with extracted information
+    setProofs(e.target.files);
   };
 
   const handleDeleteProof = (index) => {
-    const updatedProofs = proofs.filter((_, i) => i !== index);
+    const updatedProofs = Array.from(proofs).filter((_, i) => i !== index);
     setProofs(updatedProofs);
+  };
+
+  const handleViewProof = (url) => {
+    setSelectedProof(url);
+    setOpenImageDialog(true);
   };
 
   return (
@@ -156,8 +172,8 @@ export function Notifications() {
                 <th className="px-6 py-3 text-left">Allowances</th>
                 <th className="px-6 py-3 text-left">Deductions</th>
                 <th className="px-6 py-3 text-left">Net Salary</th>
-                <th className="px-6 py-3 text-left">Proofs</th>
-                <th className="px-6 py-3"></th>
+                <th className="px-6 py-3 text-left ">Proofs</th>
+                <th className="px-6 py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -173,72 +189,181 @@ export function Notifications() {
                   <td className="px-6 py-4">{slip.netSalary}</td>
                   <td className="px-6 py-4">
                     {slip.proofs && slip.proofs.length > 0 ? (
-                      <ul className='flex'>
-                        {slip.proofs.map((proof, proofIndex) => (
-                          <li key={proofIndex}>
-                            
-                              <FaEye className="mr-2"  onClick={() => window.open(proof, '_blank')}/> View Proof
-                             
-                          </li>
-                        ))}
-                      </ul>
+                      slip.proofs.map((proof, proofIndex) => (
+                        <div  key={proofIndex} className='flex'>
+                          <span className='cursor-pointer ' onClick={() => handleViewProof(proof)} >
+                            Proof {proofIndex + 1}
+                            </span > 
+                        </div>
+                      ))
                     ) : (
-                      'No Proofs'
+                      <p>No proof</p>
                     )}
                   </td>
-                  <td className="px-6 py-4 flex">
-                    <FaEdit color='green' className='mr-5 cursor-pointer' onClick={() => handleEdit(index)} />
-                    <FaTrash color='red' className='mr-5 cursor-pointer' onClick={() => handleDelete(index)} />
-                    <FaPrint color='blue' className='cursor-pointer' onClick={() => handlePrint(index)} />
+                  <td className="flex gap-4  px-6 py-4 text-right">
+
+                    <FaEdit color="blue-gray" size={20} onClick={() => handleEdit(index)} />
+
+                    <FaTrash color="red" size={20} onClick={() => handleDelete(index)} />
+
+                    <FaPrint color="blue-gray" size={20} onClick={() => handlePrint(index)} />
+
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
+        <Dialog open={openDialog} handler={setOpenDialog}>
+          <DialogHeader>{editIndex !== null ? 'Edit Salary Slip' : 'Add Salary Slip'}</DialogHeader>
+          <DialogBody divider>
+            <form onSubmit={handleSubmit(handleAddEditSalarySlip)}>
+              <div className="space-y-4">
+                <div className='flex gap-3'>
+                  <Controller
+                    name="employeeName"
+                    control={control}
+                    render={({ field }) => (
+                      <Input
+                        label="Employee Name"
+                        {...field}
+                        error={!!errors.employeeName}
+                        helperText={errors.employeeName?.message}
+                      />
+                    )}
+                  />
+                  <Controller
+                    name="employeeID"
+                    control={control}
+                    render={({ field }) => (
+                      <Input
+                        label="Employee ID"
+                        {...field}
+                        error={!!errors.employeeID}
+                        helperText={errors.employeeID?.message}
+                      />
+                    )}
+                  />
+                </div>
+                <div className='flex gap-3'>
+                  <Controller
+                    name="month"
+                    control={control}
+                    render={({ field }) => (
+                      <Input
+                        label="Month"
+                        {...field}
+                        error={!!errors.month}
+                        helperText={errors.month?.message}
+                      />
+                    )}
+                  />
+                  <Controller
+                    name="year"
+                    control={control}
+                    render={({ field }) => (
+                      <Input
+                        label="Year"
+                        {...field}
+                        error={!!errors.year}
+                        helperText={errors.year?.message}
+                      />
+                    )}
+                  />
+                </div>
+                <div className='flex gap-3'>
+                  <Controller
+                    name="basicSalary"
+                    control={control}
+                    render={({ field }) => (
+                      <Input
+                        label="Basic Salary"
+                        {...field}
+                        error={!!errors.basicSalary}
+                        helperText={errors.basicSalary?.message}
+                      />
+                    )}
+                  />
+                  <Controller
+                    name="allowances"
+                    control={control}
+                    render={({ field }) => (
+                      <Input
+                        label="Allowances"
+                        {...field}
+                        error={!!errors.allowances}
+                        helperText={errors.allowances?.message}
+                      />
+                    )}
+                  />
+                </div>
+                <div className='flex gap-3'>
+                  <Controller
+                    name="deductions"
+                    control={control}
+                    render={({ field }) => (
+                      <Input
+                        label="Deductions"
+                        {...field}
+                        error={!!errors.deductions}
+                        helperText={errors.deductions?.message}
+                      />
+                    )}
+                  />
+                  <Controller
+                    name="netSalary"
+                    control={control}
+                    render={({ field }) => (
+                      <Input
+                        label="Net Salary"
+                        {...field}
+                        error={!!errors.netSalary}
+                        helperText={errors.netSalary?.message}
+                      />
+                    )}
+                  />
+                </div>
+                <input
+                  type="file"
+                  multiple
+                  onChange={handleFileChange}
+                  className="mt-4"
+                />
+                <div>
+                  {Array.from(proofs).map((proof, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <Typography>{proof.name}</Typography>
+                      <Button onClick={() => handleDeleteProof(index)}>Delete</Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {errors && (
+                <Typography className="text-red-500">
+                  {Object.values(errors).map((error, index) => (
+                    <div key={index}>{error.message}</div>
+                  ))}
+                </Typography>
+              )}
+              <DialogFooter>
+                <Button variant="text" color="red" onClick={() => setOpenDialog(false)}>Cancel</Button>
+                <Button variant="gradient" color="green" type="submit">Save</Button>
+              </DialogFooter>
+            </form>
+          </DialogBody>
+        </Dialog>
+        <Dialog open={openImageDialog} handler={setOpenImageDialog}>
+          <DialogHeader>Proof Image</DialogHeader>
+          <DialogBody divider>
+            {selectedProof && (
+              <img src={selectedProof} alt="Proof" className="w-52 " />
+            )}
+          </DialogBody>
+          <DialogFooter>
+            <Button variant="gradient" color="green" onClick={() => setOpenImageDialog(false)}>Close</Button>
+          </DialogFooter>
+        </Dialog>
       </CardBody>
-
-      <Dialog open={openDialog} handler={setOpenDialog}>
-        <DialogHeader>{editIndex !== null ? 'Edit Salary Slip' : 'Add Salary Slip'}</DialogHeader>
-        <DialogBody>
-          {error && <Typography color="red">{error}</Typography>}
-          <div className='flex gap-10 m-3'>
-          <Input label="Employee Name" value={employeeName} onChange={(e) => setEmployeeName(e.target.value)} />
-          <Input label="Employee ID" value={employeeID} onChange={(e) => setEmployeeID(e.target.value)} />
-          </div>
-          <div className='flex gap-10 m-3'>
-          <Input label="Month" value={month} onChange={(e) => setMonth(e.target.value)} />
-          <Input label="Year" value={year} onChange={(e) => setYear(e.target.value)} />
-          </div>
-          <div className='flex gap-10 m-3'> 
-          <Input label="Basic Salary" value={basicSalary} onChange={(e) => setBasicSalary(e.target.value)} />
-          <Input label="Allowances" value={allowances} onChange={(e) => setAllowances(e.target.value)} />
-          </div>
-          <div className='flex gap-10 m-3'>
-          <Input label="Deductions" value={deductions} onChange={(e) => setDeductions(e.target.value)} />
-          <Input label="Net Salary" value={netSalary} onChange={(e) => setNetSalary(e.target.value)} />
-          </div>
-          <input type="file" multiple onChange={handleFileChange} className="my-4" />
-          <Typography>Uploaded Proofs:</Typography>
-          {proofs.length > 0 ? (
-            <ul>
-              {proofs.map((proof, index) => (
-                <li key={index}>
-                  {proof} <FaTrash color='red' className='cursor-pointer inline' onClick={() => handleDeleteProof(index)} />
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <Typography>No Proofs</Typography>
-          )}
-        </DialogBody>
-        <DialogFooter>
-          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-          <Button onClick={handleAddEditSalarySlip}>Save</Button>
-        </DialogFooter>
-      </Dialog>
     </Card>
   );
 }
-
-export default Notifications;
