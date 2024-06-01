@@ -129,22 +129,109 @@ export function Notifications() {
   };
 
   const handlePrint = (index) => {
-    const salarySlip = salarySlips[index];
-    const printWindow = window.open('', '', 'width=800,height=600');
-    printWindow.document.write(`<html><head><title>Salary Slip</title></head><body>`);
-    printWindow.document.write(`<h1>Salary Slip</h1>`);
-    printWindow.document.write(`<p>Employee Name: ${salarySlip.employeeName}</p>`);
-    printWindow.document.write(`<p>Employee ID: ${salarySlip.employeeID}</p>`);
-    printWindow.document.write(`<p>Month: ${salarySlip.month}</p>`);
-    printWindow.document.write(`<p>Year: ${salarySlip.year}</p>`);
-    printWindow.document.write(`<p>Basic Salary: ${salarySlip.basicSalary}</p>`);
-    printWindow.document.write(`<p>Allowances: ${salarySlip.allowances}</p>`);
-    printWindow.document.write(`<p>Deductions: ${salarySlip.deductions}</p>`);
-    printWindow.document.write(`<p>Net Salary: ${salarySlip.netSalary}</p>`);
-    printWindow.document.write(`</body></html>`);
-    printWindow.document.close();
-    printWindow.print();
-  };
+  const salarySlip = salarySlips[index];
+  const printWindow = window.open('', '', 'width=800,height=600');
+  
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>Salary Slip</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+          }
+          .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          }
+          .header, .footer {
+            text-align: center;
+          }
+          .header img {
+            height: 50px;
+          }
+          .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+          }
+          .table th, .table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+          }
+          .total {
+            font-weight: bold;
+          }
+          .text-right {
+            text-align: right;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <img src="path_to_ndt_global_logo.png" alt="NDT Global Logo" />
+            <h1>Salary Slip</h1>
+            <p>Date: ${new Date().toLocaleDateString()}</p>
+          </div>
+          
+          <div>
+            <h2>Employee Details:</h2>
+            <p>Employee Name: ${salarySlip.employeeName}</p>
+            <p>Employee ID: ${salarySlip.employeeID}</p>
+            <p>Month: ${salarySlip.month}</p>
+            <p>Year: ${salarySlip.year}</p>
+          </div>
+          
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Amount (BHD)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Basic Salary</td>
+                <td>${salarySlip.basicSalary}</td>
+              </tr>
+              <tr>
+                <td>Allowances</td>
+                <td>${salarySlip.allowances}</td>
+              </tr>
+              <tr>
+                <td>Deductions</td>
+                <td>${salarySlip.deductions}</td>
+              </tr>
+              <tr class="total">
+                <td>Net Salary</td>
+                <td>${salarySlip.netSalary}</td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <div class="footer">
+            <p>NDT Global W.L.L. - CR: 123854-1</p>
+            <p>BW Business Park / P.O. Box - 50979 / 112 / Bldg. 2404 / Road. 1527 / Block. 115 / Hidd</p>
+            <p>Kingdom of Bahrain</p>
+            <p>Tel: +973-1700560 / Mobile: +973-34354532</p>
+            <p>Web: www.ndtglobalwll.com / Email: admin@ndtglobalwll.com</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `);
+  
+  printWindow.document.close();
+  printWindow.print();
+};
+
 
   const handleFileChange = (e) => {
     setProofs(e.target.files);
