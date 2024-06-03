@@ -11,6 +11,7 @@ import { SignIn, SignUp } from "@/pages/auth";
 import Logout from "./pages/auth/log-out";
 import Invoices from "./pages/dashboard/Invoices";
 import InvoicesManagement from "./pages/dashboard/remindus";
+import AddCustomer from "./pages/dashboard/addcustomer";
 
 const icon = {
   className: "w-5 h-5 text-inherit",
@@ -44,6 +45,12 @@ export const routes = [
         name: "All Users",
         path: "/tables",
         element: <Tables />,
+      },
+      {
+        icon: <InformationCircleIcon {...icon} />,
+        name: "Add Customer",
+        path: "/addcustomer",
+        element: <AddCustomer />,
       },
       {
         icon: <InformationCircleIcon {...icon} />,

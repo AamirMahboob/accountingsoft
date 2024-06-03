@@ -258,7 +258,8 @@ export function Notifications() {
       <CardBody className='overflow-y-hidden'>
         <Button className="mb-4" onClick={() => setOpenDialog(true)}>Add Salary Slip</Button>
         {loader ? (
-          <Typography>Loading...</Typography>
+          <Typography><Spinner />
+          </Typography>
         ) : (
           <table className="w-full">
             <thead>
