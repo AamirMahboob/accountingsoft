@@ -1,22 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardBody, Typography, Button, Input, Select, Option } from '@material-tailwind/react';
+import { Card, CardBody, Typography, Button, Input, Dialog, DialogHeader, DialogBody, DialogFooter, Spinner } from '@material-tailwind/react';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db, storage } from '../../firebaseConfig'; // Adjust the import path as needed
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { FaEdit, FaTrash, FaPrint } from 'react-icons/fa';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 
-const Invoices = () => {
+const InvoiceCard = () => {
   const [invoices, setInvoices] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState('');
-  const [description, setDescription] = useState('');
-  const [date, setDate] = useState('');
   const [amount, setAmount] = useState('');
-  const [proof, setProof] = useState(null);
-  const [proofUrl, setProofUrl] = useState('');
+  const [date, setDate] = useState('');
+  const [proofImage, setProofImage] = useState(null);
+  const [customerDetails, setCustomerDetails] = useState({ name: '', crNo: '', pobox: '', bldgAddress: '' });
   const [editIndex, setEditIndex] = useState(null);
   const [error, setError] = useState('');
   const [loader, setLoader] = useState(false);
-  const [isUploading, setIsUploading] = useState(false); // New state for proof upload status
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogType, setDialogType] = useState(''); // 'add', 'edit', 'delete'
 
   useEffect(() => {
     const fetchInvoices = async () => {
@@ -39,67 +42,76 @@ const Invoices = () => {
     fetchCustomers();
   }, []);
 
+  const handleCustomerChange = (e) => {
+    const customerId = e.target.value;
+    setSelectedCustomer(customerId);
+    const customer = customers.find(c => c.id === customerId);
+    if (customer) {
+      setCustomerDetails({ name: customer.name, crNo: customer.crNo, pobox: customer.pobox, bldgAddress: customer.bldgAddress });
+    }
+  };
+
   const handleAddEditInvoice = async () => {
-    if (!selectedCustomer || !description || !date || !amount || !proof) {
+    if (!selectedCustomer || !amount || !date || !proofImage) {
       setError('All fields must be filled out');
       return;
     }
-  
+
     setLoader(true);
     setError('');
-  
-    try {
-      // Upload proof file (image or PDF) to Firebase Storage
-      const proofRef = ref(storage, `proofs/${proof.name}`);
-      await uploadBytes(proofRef, proof);
-      const uploadedProofUrl = await getDownloadURL(proofRef);
-      setProofUrl(uploadedProofUrl);
-  
-      const newInvoice = {
-        customer: selectedCustomer,
-        description,
-        date,
-        amount,
-        proofUrl: uploadedProofUrl
-      };
-  
-      if (editIndex !== null) {
-        const invoiceDoc = doc(db, 'invoices', invoices[editIndex].id);
-        await updateDoc(invoiceDoc, newInvoice);
-        const updatedInvoices = invoices.map((invoice, index) =>
-          index === editIndex ? { ...invoice, ...newInvoice } : invoice
-        );
-        setInvoices(updatedInvoices);
-        setEditIndex(null);
-      } else {
-        const docRef = await addDoc(collection(db, 'invoices'), newInvoice);
-        setInvoices([...invoices, { ...newInvoice, id: docRef.id }]);
+
+    const storageRef = ref(storage, `proofs/${proofImage.name}`);
+    const uploadTask = uploadBytesResumable(storageRef, proofImage);
+
+    uploadTask.on(
+      'state_changed',
+      (snapshot) => {
+        // Handle progress
+      },
+      (error) => {
+        setError('Failed to upload proof image');
+        setLoader(false);
+      },
+      async () => {
+        const proofURL = await getDownloadURL(uploadTask.snapshot.ref);
+        const newInvoice = { customer: selectedCustomer, amount, date, proofURL, ...customerDetails };
+
+        if (editIndex !== null) {
+          const invoiceDoc = doc(db, 'invoices', invoices[editIndex].id);
+          await updateDoc(invoiceDoc, newInvoice);
+          const updatedInvoices = invoices.map((invoice, index) =>
+            index === editIndex ? { ...invoice, ...newInvoice } : invoice
+          );
+          setInvoices(updatedInvoices);
+          setEditIndex(null);
+          toast.success('Invoice updated successfully!');
+        } else {
+          const docRef = await addDoc(collection(db, 'invoices'), newInvoice);
+          setInvoices([...invoices, { ...newInvoice, id: docRef.id }]);
+          toast.success('Invoice added successfully!');
+        }
+
+        setLoader(false);
+        setSelectedCustomer('');
+        setAmount('');
+        setDate('');
+        setProofImage(null);
+        setCustomerDetails({ name: '', crNo: '', pobox: '', bldgAddress: '' });
+        setDialogOpen(false);
       }
-  
-      setSelectedCustomer('');
-      setDescription('');
-      setDate('');
-      setAmount('');
-      setProof(null);
-      setProofUrl('');
-    } catch (error) {
-      console.error("Error uploading file and saving invoice: ", error);
-      setError('There was an error saving the invoice. Please try again.');
-    } finally {
-      setLoader(false);
-    }
+    );
   };
-  
-  
 
   const handleEdit = (index) => {
     const invoice = invoices[index];
     setSelectedCustomer(invoice.customer);
-    setDescription(invoice.description);
-    setDate(invoice.date);
     setAmount(invoice.amount);
-    setProofUrl(invoice.proofUrl);
+    setDate(invoice.date);
+    setProofImage(null);
+    setCustomerDetails({ name: invoice.name, crNo: invoice.crNo, pobox: invoice.pobox, bldgAddress: invoice.bldgAddress });
     setEditIndex(index);
+    setDialogType('edit');
+    setDialogOpen(true);
   };
 
   const handleDelete = async (index) => {
@@ -109,119 +121,143 @@ const Invoices = () => {
     const updatedInvoices = invoices.filter((_, i) => i !== index);
     setInvoices(updatedInvoices);
     setLoader(false);
+    toast.success('Invoice deleted successfully!');
+    setDialogOpen(false);
   };
 
-  const handlePrint = (invoice) => {
-    const printWindow = window.open('', '', 'width=800,height=600');
-    printWindow.document.write('<html><head><title>Invoice</title></head><body>');
-    printWindow.document.write(`<h1>Invoice</h1>`);
-    printWindow.document.write(`<p><strong>Customer:</strong> ${invoice.customer}</p>`);
-    printWindow.document.write(`<p><strong>Description:</strong> ${invoice.description}</p>`);
-    printWindow.document.write(`<p><strong>Date:</strong> ${invoice.date}</p>`);
-    printWindow.document.write(`<p><strong>Amount:</strong> ${invoice.amount}</p>`);
-    printWindow.document.write(`<p><strong>Proof:</strong> <a href="${invoice.proofUrl}" target="_blank">View Proof</a></p>`);
-    printWindow.document.write('</body></html>');
-    printWindow.document.close();
-    printWindow.print();
+  const handlePrint = (index) => {
+    // Code to handle printing the invoice, e.g., opening a print dialog or sending data to a printer
+    // This function can be implemented based on your printing requirements
+    console.log('Printing invoice:', invoices[index]);
   };
 
   return (
-    <Card className='overflow-y-hidden'>
-      {/* <Typography variant="h5">Invoices</Typography>
+    <Card>
+      <Typography variant="h5" className='m-5'>Invoices</Typography>
       <CardBody>
-        <div className="flex space-x-4 mb-4">
-          <div className="flex flex-col">
-            <Typography variant="h6">Customer</Typography>
-            <Select
-              label="Select Customer"
-              value={selectedCustomer}
-              onChange={(e) => setSelectedCustomer(e.target.value)}
-            >
-              {customers.map((customer, index) => (
-                <Option key={index} value={customer.name}>
-                  {customer.name}
-                </Option>
-              ))}
-            </Select>
-          </div>
-          <div className="flex flex-col">
-            <Typography variant="h6">Description</Typography>
-            <Input
-              type="text"
-              label="Description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
-          <div className="flex flex-col">
-            <Typography variant="h6">Date</Typography>
-            <Input
-              type="date"
-              label="Date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
-          </div>
-          <div className="flex flex-col">
-            <Typography variant="h6">Amount</Typography>
-            <Input
-              type="number"
-              label="Amount"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-            />
-          </div>
-          <div className="flex flex-col">
-            <Typography variant="h6">Proof</Typography>
-            <Input
-              type="file"
-              label="Upload Proof"
-              onChange={(e) => setProof(e.target.files[0])}
-            />
-          </div>
-          <Button 
-  className="w-32 h-10 mt-6" 
-  onClick={handleAddEditInvoice} 
-  disabled={loader}
->
-  {editIndex !== null ? 'Edit Invoice' : 'Add Invoice'}
-</Button>
-
-        </div>
-        {error && <Typography color="red">{error}</Typography>}
+        <Button className="mb-4" onClick={() => { setDialogType('add'); setDialogOpen(true); }}>Add Invoice</Button>
         {loader ? (
-          <Typography>Loading...</Typography>
+          <Typography><Spinner /></Typography>
         ) : (
           <table className="w-full">
             <thead>
               <tr>
                 <th className="px-6 py-3 text-left">Customer</th>
-                <th className="px-6 py-3 text-left">Description</th>
-                <th className="px-6 py-3 text-left">Date</th>
                 <th className="px-6 py-3 text-left">Amount</th>
-                <th className="px-6 py-3">Actions</th>
+                <th className="px-6 py-3 text-left">Date</th>
+                <th className="px-6 py-3 text-left">Proof</th>
+                <th className="px-6 py-3 text-left">Actions</th>
               </tr>
             </thead>
             <tbody>
               {invoices.map((invoice, index) => (
                 <tr key={index} className="border-b border-gray-200">
-                  <td className="px-6 py-4">{invoice.customer}</td>
-                  <td className="px-6 py-4">{invoice.description}</td>
-                  <td className="px-6 py-4">{invoice.date}</td>
+                  <td className="px-6 py-4">{invoice.name}</td>
                   <td className="px-6 py-4">{invoice.amount}</td>
-                  <td className="px-6 py-4 flex space-x-2">
-                    <Button size="sm" onClick={() => handleEdit(index)}>Edit</Button>
-                    <Button size="sm" onClick={() => handleDelete(index)}>Delete</Button>
-                    <Button size="sm" onClick={() => handlePrint(invoice)}>Print</Button>
+                  <td className="px-6 py-4">{invoice.date}</td>
+                  <td className="px-6 py-4">
+                    {invoice.proofURL ? (
+                      <img src={invoice.proofURL} alt="proof" width={50} height={50} />
+                    ) : (
+                      'No proof'
+                    )}
+                  </td>
+                  <td className="px-6 py-4 flex space-x-4">
+                    <FaPrint className='cursor-pointer' onClick={() => handlePrint(index)} />
+                    <FaEdit className='cursor-pointer' onClick={() => handleEdit(index)} />
+                    <FaTrash className='cursor-pointer' onClick={() => { setEditIndex(index); setDialogType('delete'); setDialogOpen(true); }} />
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
-      </CardBody> */}
+      </CardBody>
+
+      <Dialog open={dialogOpen} handler={() => setDialogOpen(false)}>
+        <DialogHeader>
+          {dialogType === 'delete' ? 'Delete Invoice' : editIndex !== null ? 'Edit Invoice' : 'Add Invoice'}
+        </DialogHeader>
+        <DialogBody>
+          {dialogType === 'delete' ? (
+            <Typography>Are you sure you want to delete this invoice?</Typography>
+          ) : (
+            <div className="flex flex-col space-y-4">
+              <select
+                value={selectedCustomer}
+                onChange={handleCustomerChange}
+                className="border border-gray-300 p-2 rounded"
+              >
+                <option value="">Select Customer</option>
+                {customers.map((customer) => (
+                  <option key={customer.id} value={customer.id}>
+                    {customer.name}
+                  </option>
+                ))}
+              </select>
+              <Input
+                type="text"
+                label="Name"
+                value={customerDetails.name}
+                disabled
+              />
+              <Input
+                type="text"
+                label="CR No"
+                value={customerDetails.crNo}
+                disabled
+              />
+              <Input
+                type="text"
+                label="P.O. Box"
+                value={customerDetails.pobox}
+                disabled
+              />
+              <Input
+                type="text"
+                label="Building Address"
+                value={customerDetails.bldgAddress}
+                disabled
+              />
+              <Input
+                type="text"
+                label="Amount"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
+              <Input
+                type="date"
+                label="Date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
+              <Input
+                type="file"
+                label="Proof Image"
+                onChange={(e) => setProofImage(e.target.files[0])}
+              />
+              {error && <Typography color="red">{error}</Typography>}
+            </div>
+          )}
+        </DialogBody>
+        <DialogFooter>
+          {dialogType === 'delete' ? (
+            <>
+              <Button variant="text" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button variant="filled" color="red" onClick={() => handleDelete(editIndex)}>Delete</Button>
+            </>
+          ) : (
+            <>
+              <Button variant="text" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button variant="filled" onClick={handleAddEditInvoice}>
+                {editIndex !== null ? 'Edit Invoice' : 'Add Invoice'}
+              </Button>
+            </>
+          )}
+        </DialogFooter>
+      </Dialog>
     </Card>
   );
 };
 
-export default Invoices;
+export default InvoiceCard;
