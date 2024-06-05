@@ -107,7 +107,7 @@ const InvoiceCard = () => {
     setSelectedCustomer(invoice.customer);
     setAmount(invoice.amount);
     setDate(invoice.date);
-    setProofImage(null);
+    setProofImage();
     setCustomerDetails({ name: invoice.name, crNo: invoice.crNo, pobox: invoice.pobox, bldgAddress: invoice.bldgAddress });
     setEditIndex(index);
     setDialogType('edit');
@@ -126,9 +126,90 @@ const InvoiceCard = () => {
   };
 
   const handlePrint = (index) => {
-    // Code to handle printing the invoice, e.g., opening a print dialog or sending data to a printer
-    // This function can be implemented based on your printing requirements
-    console.log('Printing invoice:', invoices[index]);
+    const invoice = invoices[index];
+    const printWindow = window.open('', '', 'width=800,height=600');
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Invoice</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 20px;
+            }
+            .container {
+              max-width: 800px;
+              margin: 0 auto;
+              padding: 20px;
+              border: 1px solid #ccc;
+              box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+            .header, .footer {
+              text-align: center;
+            }
+            .header img {
+              height: 50px;
+            }
+            .table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 20px;
+            }
+            .table th, .table td {
+              border: 1px solid #ccc;
+              padding: 8px;
+              text-align: left;
+            }
+            .total {
+              font-weight: bold;
+            }
+            .text-right {
+              text-align: right;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Invoice</h1>
+              <p>Date: ${new Date().toLocaleDateString()}</p>
+            </div>
+            
+            <div>
+              <h2>Customer Details:</h2>
+              <p>Customer Name: ${invoice.name}</p>
+              <p>CR No: ${invoice.crNo}</p>
+              <p>P.O. Box: ${invoice.pobox}</p>
+              <p>Building Address: ${invoice.bldgAddress}</p>
+            </div>
+            
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th>Amount (BHD)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Amount</td>
+                  <td>${invoice.amount}</td>
+                </tr>
+              </tbody>
+            </table>
+            
+            <div class="footer">
+              <p>Company Information Here</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.print();
   };
 
   return (
@@ -163,9 +244,10 @@ const InvoiceCard = () => {
                     )}
                   </td>
                   <td className="px-6 py-4 flex space-x-4">
+                    <FaEdit  className='cursor-pointer' onClick={() => handleEdit(index)} />
+                    <FaTrash color='red' className='cursor-pointer' onClick={() => { setEditIndex(index); setDialogType('delete'); setDialogOpen(true); }} />
                     <FaPrint className='cursor-pointer' onClick={() => handlePrint(index)} />
-                    <FaEdit className='cursor-pointer' onClick={() => handleEdit(index)} />
-                    <FaTrash className='cursor-pointer' onClick={() => { setEditIndex(index); setDialogType('delete'); setDialogOpen(true); }} />
+                      
                   </td>
                 </tr>
               ))}
