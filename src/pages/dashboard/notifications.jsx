@@ -261,33 +261,33 @@ export function Notifications() {
           <Typography><Spinner />
           </Typography>
         ) : (
-          <table className="w-full">
+          <table className="min-w-full bg-white border">
             <thead>
               <tr>
-                <th className="px-6 py-3 text-left">Employee Name</th>
-                <th className="px-6 py-3 text-left">Employee ID</th>
-                <th className="px-6 py-3 text-left">Month</th>
-                <th className="px-6 py-3 text-left">Year</th>
-                <th className="px-6 py-3 text-left">Basic Salary</th>
-                <th className="px-6 py-3 text-left">Allowances</th>
-                <th className="px-6 py-3 text-left">Deductions</th>
-                <th className="px-6 py-3 text-left">Net Salary</th>
-                <th className="px-6 py-3 text-left">Proofs</th>
+                <th className="px-6 py-3 text-left border">Employee Name</th>
+                <th className="px-6 py-3 text-left border">Employee ID</th>
+                <th className="px-6 py-3 text-left border">Month</th>
+                <th className="px-6 py-3 text-left border">Year</th>
+                <th className="px-6 py-3 text-left border">Basic Salary</th>
+                <th className="px-6 py-3 text-left border">Allowances</th>
+                <th className="px-6 py-3 text-left border">Deductions</th>
+                <th className="px-6 py-3 text-left border">Net Salary</th>
+                <th className="px-6 py-3 text-left border">Proofs</th>
                 <th className="px-6 py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
               {salarySlips.map((slip, index) => (
                 <tr key={index} className="border-b border-gray-200">
-                  <td className="px-6 py-4">{slip.employeeName}</td>
-                  <td className="px-6 py-4">{slip.employeeID}</td>
-                  <td className="px-6 py-4">{slip.month}</td>
-                  <td className="px-6 py-4">{slip.year}</td>
-                  <td className="px-6 py-4">{slip.basicSalary}</td>
-                  <td className="px-6 py-4">{slip.allowances}</td>
-                  <td className="px-6 py-4">{slip.deductions}</td>
-                  <td className="px-6 py-4">{slip.netSalary}</td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 border">{slip.employeeName}</td>
+                  <td className="px-6 py-4 border">{slip.employeeID}</td>
+                  <td className="px-6 py-4 border">{slip.month}</td>
+                  <td className="px-6 py-4 border">{slip.year}</td>
+                  <td className="px-6 py-4 border">{slip.basicSalary}</td>
+                  <td className="px-6 py-4 border">{slip.allowances}</td>
+                  <td className="px-6 py-4 border">{slip.deductions}</td>
+                  <td className="px-6 py-4 border">{slip.netSalary}</td>
+                  <td className="px-6 py-4 border">
                     {slip.proofs && slip.proofs.length > 0 ? (
                       slip.proofs.map((proof, proofIndex) => (
                         // <FaEye key={proofIndex} className="cursor-pointer mx-1" onClick={() => handleViewProof(proof)} />
@@ -300,10 +300,10 @@ export function Notifications() {
                       <Typography>No proof</Typography>
                     )}
                   </td>
-                  <td className="px-6 py-4 flex gap-3">
-                    <FaEdit color="blue-gray" className='cursor-pointer' onClick={() => handleEdit(index)} />
-                    <FaTrash color="red" className='cursor-pointer' onClick={() => handleDelete(index)} />
-                    <FaPrint color="blue-gray" className='cursor-pointer' onClick={() => handlePrint(index)} />
+                  <td className="px-6 py-4 flex gap-3 m-5" >
+                    <FaEdit variant="text" color="blue" className='cursor-pointer' onClick={() => handleEdit(index)} />
+                    <FaTrash variant="text"  color="red" className='cursor-pointer' onClick={() => handleDelete(index)} />
+                    <FaPrint variant="text"  color="blue-gray" className='cursor-pointer' onClick={() => handlePrint(index)} />
                   </td>
                 </tr>
               ))}

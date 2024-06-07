@@ -12,6 +12,7 @@
     "@heroicons/react": "2.0.18",
     "@hookform/resolvers": "^3.4.2",
     "@material-tailwind/react": "2.1.4",
+    "@react-pdf/renderer": "^3.4.4",
     "apexcharts": "3.44.0",
     "firebase": "^10.12.1",
     "formik": "^2.4.6",

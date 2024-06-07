@@ -14,11 +14,13 @@ export function Tables() {
         querySnapshot.forEach((doc) => {
           userData.push({ id: doc.id, ...doc.data() });
         });
-        console.log("Fetched users:", userData); // Debug log
+        console.log("Fetched users:", userData);
         setUsers(userData);
       } catch (error) {
-        console.error("Error fetching users: ", error);
-      }
+
+            console.error("Error fetching users: ", error);
+      
+          }
     };
 
     fetchUsers();

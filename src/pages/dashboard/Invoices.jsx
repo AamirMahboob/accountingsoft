@@ -11,8 +11,7 @@ const InvoiceCard = () => {
   const [invoices, setInvoices] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState('');
-  const [amount, setAmount] = useState('');
-  const [date, setDate] = useState('');
+  const [invoiceEntries, setInvoiceEntries] = useState([{ description: '', date: '', qty: '', amount: '' }]);
   const [proofImage, setProofImage] = useState(null);
   const [customerDetails, setCustomerDetails] = useState({ name: '', crNo: '', pobox: '', bldgAddress: '' });
   const [editIndex, setEditIndex] = useState(null);
@@ -52,7 +51,11 @@ const InvoiceCard = () => {
   };
 
   const handleAddEditInvoice = async () => {
-    if (!selectedCustomer || !amount || !date || !proofImage) {
+    console.log("Selected Customer:", selectedCustomer);
+    console.log("Invoice Entries:", invoiceEntries);
+    console.log("Proof Image:", proofImage);
+
+    if (!selectedCustomer || invoiceEntries.some(entry => !entry.description || !entry.date || !entry.qty || !entry.amount) || !proofImage) {
       setError('All fields must be filled out');
       return;
     }
@@ -74,7 +77,7 @@ const InvoiceCard = () => {
       },
       async () => {
         const proofURL = await getDownloadURL(uploadTask.snapshot.ref);
-        const newInvoice = { customer: selectedCustomer, amount, date, proofURL, ...customerDetails };
+        const newInvoice = { customer: selectedCustomer, entries: invoiceEntries, proofURL, ...customerDetails };
 
         if (editIndex !== null) {
           const invoiceDoc = doc(db, 'invoices', invoices[editIndex].id);
@@ -93,8 +96,7 @@ const InvoiceCard = () => {
 
         setLoader(false);
         setSelectedCustomer('');
-        setAmount('');
-        setDate('');
+        setInvoiceEntries([{ description: '', date: '', qty: '', amount: '' }]);
         setProofImage(null);
         setCustomerDetails({ name: '', crNo: '', pobox: '', bldgAddress: '' });
         setDialogOpen(false);
@@ -102,12 +104,24 @@ const InvoiceCard = () => {
     );
   };
 
+  const handleEntryChange = (index, field, value) => {
+    const updatedEntries = invoiceEntries.map((entry, i) => i === index ? { ...entry, [field]: value } : entry);
+    setInvoiceEntries(updatedEntries);
+  };
+
+  const addEntry = () => {
+    setInvoiceEntries([...invoiceEntries, { description: '', date: '', qty: '', amount: '' }]);
+  };
+
+  const removeEntry = (index) => {
+    setInvoiceEntries(invoiceEntries.filter((_, i) => i !== index));
+  };
+
   const handleEdit = (index) => {
     const invoice = invoices[index];
     setSelectedCustomer(invoice.customer);
-    setAmount(invoice.amount);
-    setDate(invoice.date);
-    setProofImage();
+    setInvoiceEntries(invoice.entries || []);
+    setProofImage(null);
     setCustomerDetails({ name: invoice.name, crNo: invoice.crNo, pobox: invoice.pobox, bldgAddress: invoice.bldgAddress });
     setEditIndex(index);
     setDialogType('edit');
@@ -128,213 +142,176 @@ const InvoiceCard = () => {
   const handlePrint = (index) => {
     const invoice = invoices[index];
     const printWindow = window.open('', '', 'width=800,height=600');
-
+  
     printWindow.document.write(`
-      <html>
-        <head>
-          <title>Invoice</title>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              margin: 0;
-              padding: 20px;
-            }
-            .container {
-              max-width: 800px;
-              margin: 0 auto;
-              padding: 20px;
-              border: 1px solid #ccc;
-              box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            }
-            .header, .footer {
-              text-align: center;
-            }
-            .header img {
-              height: 50px;
-            }
-            .table {
-              width: 100%;
-              border-collapse: collapse;
-              margin-top: 20px;
-            }
-            .table th, .table td {
-              border: 1px solid #ccc;
-              padding: 8px;
-              text-align: left;
-            }
-            .total {
-              font-weight: bold;
-            }
-            .text-right {
-              text-align: right;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>Invoice</h1>
-              <p>Date: ${new Date().toLocaleDateString()}</p>
-            </div>
-            
-            <div>
-              <h2>Customer Details:</h2>
-              <p>Customer Name: ${invoice.name}</p>
-              <p>CR No: ${invoice.crNo}</p>
-              <p>P.O. Box: ${invoice.pobox}</p>
-              <p>Building Address: ${invoice.bldgAddress}</p>
-            </div>
-            
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Description</th>
-                  <th>Amount (BHD)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Amount</td>
-                  <td>${invoice.amount}</td>
-                </tr>
-              </tbody>
-            </table>
-            
-            <div class="footer">
-              <p>Company Information Here</p>
-            </div>
+    <html>
+      <head>
+        
+        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+      </head>
+      <body class="font-sans p-5">
+        <div class="flex justify-center items-center">
+           <h2 class="text-2xl font-bold">NDT Global W.L.L</h2>
+           <hr style="width:100%;text-align:left;margin-left:0">
+        </div>
+        <div class="flex justify-center items-center">
+           <h2 class="text-2xl font-bold text-center">Tax Invoice</h2>
+        </div>
+       
+          <h1 class="text-3xl font-bold mb-5">Tax Invoice</h1>
+          <div class="invoice-details mb-5">
+            <p>Date: ${new Date().toLocaleDateString()}</p>
+            <p>Invoice #: ${invoice.crNo || 'N/A'}</p>
           </div>
-        </body>
-      </html>
-    `);
-
-    printWindow.document.close();
-    printWindow.print();
-  };
-
-  return (
-    <Card>
-      <Typography variant="h5" className='m-5'>Invoices</Typography>
-      <CardBody>
-        <Button className="mb-4" onClick={() => { setDialogType('add'); setDialogOpen(true); }}>Add Invoice</Button>
-        {loader ? (
-          <Typography><Spinner /></Typography>
-        ) : (
-          <table className="w-full">
+          <div class="customer-details mb-5">
+            <h3 class="text-xl font-semibold">To:</h3>
+            <p>${invoice.name}</p>
+            <p>CR No: ${invoice.crNo}</p>
+            <p>P.O. Box: ${invoice.pobox}</p>
+            <p>Building Address: ${invoice.bldgAddress}</p>
+          </div>
+          <table class="w-full border-collapse border border-gray-400">
             <thead>
-              <tr>
-                <th className="px-6 py-3 text-left">Customer</th>
-                <th className="px-6 py-3 text-left">Amount</th>
-                <th className="px-6 py-3 text-left">Date</th>
-                <th className="px-6 py-3 text-left">Proof</th>
-                <th className="px-6 py-3 text-left">Actions</th>
+              <tr class="bg-gray-200">
+                <th class="border border-gray-400 px-4 py-2">Description</th>
+                <th class="border border-gray-400 px-4 py-2">Date</th>
+                <th class="border border-gray-400 px-4 py-2">Quantity</th>
+                <th class="border border-gray-400 px-4 py-2">Amount (BHD)</th>
               </tr>
             </thead>
             <tbody>
-              {invoices.map((invoice, index) => (
-                <tr key={index} className="border-b border-gray-200">
-                  <td className="px-6 py-4">{invoice.name}</td>
-                  <td className="px-6 py-4">{invoice.amount}</td>
-                  <td className="px-6 py-4">{invoice.date}</td>
-                  <td className="px-6 py-4">
-                    {invoice.proofURL ? (
-                      <img src={invoice.proofURL} alt="proof" width={50} height={50} />
-                    ) : (
-                      'No proof'
-                    )}
-                  </td>
-                  <td className="px-6 py-4 flex space-x-4">
-                    <FaEdit  className='cursor-pointer' onClick={() => handleEdit(index)} />
-                    <FaTrash color='red' className='cursor-pointer' onClick={() => { setEditIndex(index); setDialogType('delete'); setDialogOpen(true); }} />
-                    <FaPrint className='cursor-pointer' onClick={() => handlePrint(index)} />
-                      
-                  </td>
+              ${invoice.entries.map(entry => `
+                <tr>
+                  <td class="border border-gray-400 px-4 py-2">${entry.description}</td>
+                  <td class="border border-gray-400 px-4 py-2">${entry.date}</td>
+                  <td class="border border-gray-400 px-4 py-2">${entry.qty}</td>
+                  <td class="border border-gray-400 px-4 py-2">${entry.amount}</td>
                 </tr>
-              ))}
+              `).join('')}
             </tbody>
           </table>
+          <div class="gap-10 mt-32 flex flex-col">
+            <p>For NDT Global W.L.L</p>
+            <p>Abdul Razak M. Mohamed Murthaja</p>
+            <p>Director</p>
+          </div>
+        </div>
+        <div class="mt-20 flex flex-col">
+            <h2 class="text-2xl font-bold">NDT Global W.L.L</h2>
+            <p>CR: 125208-1</p>
+            <p>BIW Business Park / PO.Box. 52009 / No.122 / Bldg. 2004 / Road. 1527 / Block. 115 / Hidd</p>
+            <p>Kingdom of Bahrain</p>
+            <p>Tel: +973-17006610 / Mobile: +973-33445432</p>
+            <p>Web: www.ndtglobalwll.com | Email: admin@ndtglobalwll.com</p>
+          </div>
+
+      </body>
+    </html>
+  `);
+  
+    printWindow.document.close();
+    printWindow.print();
+  };
+  
+
+  const openDialog = (type) => {
+    setDialogType(type);
+    setDialogOpen(true);
+  };
+
+  const closeDialog = () => {
+    setDialogOpen(false);
+    setError('');
+    setSelectedCustomer('');
+    setInvoiceEntries([{ description: '', date: '', qty: '', amount: '' }]);
+    setProofImage(null);
+    setCustomerDetails({ name: '', crNo: '', pobox: '', bldgAddress: '' });
+    setEditIndex(null);
+  };
+
+  return (
+    <Card className="mt-6">
+      <CardBody>
+        <Typography variant="h5" color="blue-gray" className="mb-6">Invoices</Typography>
+        <Button   className="mb-4" onClick={() => openDialog('add')}>Add Invoice</Button>
+
+        {loader ? <Spinner className="h-12 w-12" /> : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white border">
+              <thead>
+                <tr>
+                  <th className="py-2 px-4 border">Customer</th>
+                  <th className="py-2 px-4 border">Entries</th>
+                  <th className="py-2 px-4 border">Proof</th>
+                  <th className="py-2 px-4 border">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {invoices.map((invoice, index) => (
+                  <tr key={index}>
+                    <td className="py-2 px-4 border">{invoice.name}</td>
+                    <td className="py-2 px-4 border">
+                      <ul>
+                        {invoice.entries.map((entry, i) => (
+                          <li key={i}>{entry.description} - {entry.date} - {entry.qty} - {entry.amount}</li>
+                        ))}
+                      </ul>
+                    </td>
+                    <td className="py-2 px-4 border"><a href={invoice.proofURL} target="_blank" rel="noopener noreferrer">View Proof</a></td>
+                    <td className="py-2 px-4 border">
+                      <Button variant="text" color="blue" onClick={() => handleEdit(index)}><FaEdit /></Button>
+                      <Button variant="text" color="red" onClick={() => openDialog('delete')}><FaTrash /></Button>
+                      <Button variant="text" color="green" onClick={() => handlePrint(index)}><FaPrint /></Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </CardBody>
-
-      <Dialog open={dialogOpen} handler={() => setDialogOpen(false)}>
-        <DialogHeader>
-          {dialogType === 'delete' ? 'Delete Invoice' : editIndex !== null ? 'Edit Invoice' : 'Add Invoice'}
-        </DialogHeader>
-        <DialogBody>
+      <Dialog  open={dialogOpen} handler={closeDialog} size="lg">
+        <DialogHeader>{dialogType === 'edit' ? 'Edit Invoice' : dialogType === 'delete' ? 'Delete Invoice' : 'Add Invoice'}</DialogHeader>
+        <DialogBody divider>
           {dialogType === 'delete' ? (
-            <Typography>Are you sure you want to delete this invoice?</Typography>
+            <Typography variant="paragraph">Are you sure you want to delete this invoice?</Typography>
           ) : (
-            <div className="flex flex-col space-y-4">
-              <select
-                value={selectedCustomer}
-                onChange={handleCustomerChange}
-                className="border border-gray-300 p-2 rounded"
-              >
-                <option value="">Select Customer</option>
-                {customers.map((customer) => (
-                  <option key={customer.id} value={customer.id}>
-                    {customer.name}
-                  </option>
+            <>
+              <div className="mb-4">
+                <label>Customer</label>
+                <select value={selectedCustomer} onChange={handleCustomerChange} className="w-full p-2 border">
+                  <option value="">Select Customer</option>
+                  {customers.map(customer => (
+                    <option key={customer.id} value={customer.id}>{customer.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="mb-4">
+                {invoiceEntries.map((entry, index) => (
+                  <div key={index} className="mb-2 flex gap-2">
+                    <Input type="text" placeholder="Description" value={entry.description} onChange={(e) => handleEntryChange(index, 'description', e.target.value)} />
+                    <Input type="date" placeholder="Date" value={entry.date} onChange={(e) => handleEntryChange(index, 'date', e.target.value)} />
+                    <Input type="number" placeholder="Quantity" value={entry.qty} onChange={(e) => handleEntryChange(index, 'qty', e.target.value)} />
+                    <Input type="number" placeholder="Amount" value={entry.amount} onChange={(e) => handleEntryChange(index, 'amount', e.target.value)} />
+                    <Button color="red" onClick={() => removeEntry(index)}>Remove</Button>
+                  </div>
                 ))}
-              </select>
-              <Input
-                type="text"
-                label="Name"
-                value={customerDetails.name}
-                disabled
-              />
-              <Input
-                type="text"
-                label="CR No"
-                value={customerDetails.crNo}
-                disabled
-              />
-              <Input
-                type="text"
-                label="P.O. Box"
-                value={customerDetails.pobox}
-                disabled
-              />
-              <Input
-                type="text"
-                label="Building Address"
-                value={customerDetails.bldgAddress}
-                disabled
-              />
-              <Input
-                type="text"
-                label="Amount"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-              />
-              <Input
-                type="date"
-                label="Date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
-              <Input
-                type="file"
-                label="Proof Image"
-                onChange={(e) => setProofImage(e.target.files[0])}
-              />
-              {error && <Typography color="red">{error}</Typography>}
-            </div>
+                <Button color="blue" onClick={addEntry}>Add Entry</Button>
+              </div>
+              <div className="mb-4">
+                <label>Proof Image</label>
+                <Input type="file" onChange={(e) => setProofImage(e.target.files[0])} />
+              </div>
+              {error && <Typography variant="small" color="red">{error}</Typography>}
+            </>
           )}
         </DialogBody>
         <DialogFooter>
+          <Button variant="text" color="red" onClick={closeDialog} className="mr-2">Cancel</Button>
           {dialogType === 'delete' ? (
-            <>
-              <Button variant="text" onClick={() => setDialogOpen(false)}>Cancel</Button>
-              <Button variant="filled" color="red" onClick={() => handleDelete(editIndex)}>Delete</Button>
-            </>
+            <Button variant="gradient" color="red" onClick={() => handleDelete(editIndex)}>Delete</Button>
           ) : (
-            <>
-              <Button variant="text" onClick={() => setDialogOpen(false)}>Cancel</Button>
-              <Button variant="filled" onClick={handleAddEditInvoice}>
-                {editIndex !== null ? 'Edit Invoice' : 'Add Invoice'}
-              </Button>
-            </>
+            <Button variant="gradient" color="blue" onClick={handleAddEditInvoice}>Save</Button>
           )}
         </DialogFooter>
       </Dialog>
