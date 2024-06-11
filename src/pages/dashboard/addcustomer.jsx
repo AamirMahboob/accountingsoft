@@ -17,7 +17,7 @@ const CustomerCard = () => {
   const [error, setError] = useState('');
   const [loader, setLoader] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogType, setDialogType] = useState(''); // 'add', 'edit', 'delete'
+  const [dialogType, setDialogType] = useState('');
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -98,10 +98,11 @@ const CustomerCard = () => {
           <table className="w-full">
             <thead>
               <tr>
-                <th className="px-6 py-3 text-left">Name</th>
+                <th className="px-6 py-3 text-left">Client Name</th>
                 <th className="px-6 py-3 text-left">CR No</th>
-                <th className="px-6 py-3 text-left">P.O. Box</th>
-                <th className="px-6 py-3 text-left">Building Address</th>
+                <th className="px-6 py-3 text-left">VAT ACCOUNT NUMBER</th>
+                <th className="px-6 py-3 text-left">
+                  Company Address</th>
                 
                 <th className="px-6 py-3 text-left">Actions</th>
               </tr>
@@ -150,7 +151,7 @@ const CustomerCard = () => {
               />
               <Input
                 type="text"
-                label="P.O. Box"
+                label="VAT Account Number"
                 value={pobox}
                 onChange={(e) => setPobox(e.target.value)}
               />
