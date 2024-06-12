@@ -529,11 +529,12 @@ export function Notifications() {
                 variant="text"
                 color="blue"
                 onClick={() => setOpenDialog(false)}
+                
               >
                 Cancel
               </Button>
-              <Button type="submit" color="blue">
-                {loader ? <Spinner className="h-4 w-4" /> : editIndex !== null ? 'Update' : 'Add'}
+              <Button type="submit" color="blue" className="bg-black text-white">
+                {loader ? <Spinner className="h-4 w-4 bg-black" /> : editIndex !== null ? 'Update' : 'Add'}
               </Button>
             </DialogFooter>
           </form>
@@ -556,6 +557,7 @@ export function Notifications() {
             variant="text"
             color="blue"
             onClick={() => setOpenImageDialog(false)}
+            className="bg-black text-white"
           >
             Close
           </Button>
