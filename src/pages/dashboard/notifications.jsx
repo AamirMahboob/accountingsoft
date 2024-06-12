@@ -19,11 +19,14 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../firebaseConfig';
 import { FaEdit, FaTrash, FaPrint, FaEye } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import logo from '../../../dist/assets/logo.png';
+import prepared from '../../../dist/assets/amnda.jpg';
+import auth from '../../../dist/assets/auth.png'
 
 // Validation schema
 const schema = yup.object().shape({
   employeeName: yup.string().required('Employee Name is required'),
-  employeeName: yup.string().required('Employee Designation is required'),
+  employeeDesignation: yup.string().required('Employee Designation is required'),
   monthYear: yup.string().required('Month and Year are required'),
   basicSalary: yup.number().required('Basic Salary is required'),
   deductions: yup.number().required('Deductions are required'),
@@ -67,15 +70,28 @@ export function Notifications() {
     fetchSalarySlips();
   }, []);
 
-  useEffect(() => {
-    const totalOtPayable = otHours * otRatePerHour;
-    const totalBasicPayable = basicSalary;
-    const netSalary = totalBasicPayable + totalOtPayable - deductions - loansAdvances;
+ useEffect(() => {
+    const parseNumber = (value) => isNaN(parseFloat(value)) ? 0 : parseFloat(value);
+
+    const totalOtPayable = parseNumber(otHours) * parseNumber(otRatePerHour);
+    const totalBasicPayable = parseNumber(basicSalary);
+    const netSalary = totalBasicPayable + totalOtPayable - parseNumber(deductions) - parseNumber(loansAdvances);
+
+    console.log({
+        otHours: parseNumber(otHours),
+        otRatePerHour: parseNumber(otRatePerHour),
+        basicSalary: parseNumber(basicSalary),
+        deductions: parseNumber(deductions),
+        loansAdvances: parseNumber(loansAdvances),
+        totalOtPayable,
+        totalBasicPayable,
+        netSalary
+    });
 
     setValue('totalOtPayable', totalOtPayable);
     setValue('totalBasicPayable', totalBasicPayable);
     setValue('netSalary', netSalary);
-  }, [basicSalary, otHours, otRatePerHour, deductions, loansAdvances, setValue]);
+}, [basicSalary, otHours, otRatePerHour, deductions, loansAdvances, setValue]);
 
   const handleAddEditSalarySlip = async (data) => {
     setLoader(true);
@@ -170,8 +186,14 @@ export function Notifications() {
               border: 1px solid #ccc;
               box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             }
+            .header {
+              display: flex;
+              justify-content: space-between;
+
+            }
             .header, .footer {
               text-align: center;
+              
             }
             .header img {
               height: 50px;
@@ -192,14 +214,25 @@ export function Notifications() {
             .text-right {
               text-align: right;
             }
+            h1{
+              font-size: 17px;
+            }
+            .logo{
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              gap: 10px;
+            }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <img src="path_to_platinum_marine_logo.png" alt="Platinum Marine Logo" />
+              <div class="logo">
+              <img src=${logo} alt="Platinum Marine Logo" />
               <h1>PLATINUM MARINE WLL</h1>
-              <h2>SALARY SLIP FOR THE MONTH OF ${salarySlip.monthYear}</h2>
+              </div>
+              <h2>${salarySlip.monthYear}</h2>
             </div>
             
             <div>
@@ -254,12 +287,12 @@ export function Notifications() {
               </tbody>
             </table>
             
-            <h2>TOTAL SALARY PAYABLE</h2>
-            <p>${salarySlip.netSalary}</p>
+            <h2>TOTAL SALARY PAYABLE: ${salarySlip.netSalary}</h2>
+            <p></p>
             
             <div class="footer">
-              <p>Prepared By: <img src="path_to_your_signature_image.png" alt="Your Signature" /></p>
-              <p>Authorized By: <img src="path_to_sunils_signature_image.png" alt="Sunil's Signature" /></p>
+              <p>Prepared By: <img src=${prepared} alt="Your Signature" width=100px height=30px /></p>
+              <p>Authorized By: <img src=${auth} width=100px height=30px  alt="Sunil's Signature" /></p>
               <p>Received by: ___________________</p>
               <p>Platinum Marine Stamp</p>
             </div>

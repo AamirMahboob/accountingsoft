@@ -4,6 +4,7 @@ import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from 'firebase
 import { db } from '../../firebaseConfig'; // Adjust the import path as needed
 import { MdDeleteOutline } from "react-icons/md";
 import { MdModeEdit } from "react-icons/md";
+
 const ExpenseCard = () => {
   const [expenses, setExpenses] = useState([]);
   const [description, setDescription] = useState('');
