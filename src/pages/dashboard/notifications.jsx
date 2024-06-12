@@ -157,6 +157,7 @@ export function Notifications() {
 
   const handleDelete = async (index) => {
     setLoader(true);
+    console.log("akskdaks")
     const salarySlipDoc = doc(db, 'salarySlips', salarySlips[index].id);
     await deleteDoc(salarySlipDoc);
     const updatedSalarySlips = salarySlips.filter((_, i) => i !== index);
