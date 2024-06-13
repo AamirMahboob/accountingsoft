@@ -19,9 +19,9 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../firebaseConfig';
 import { FaEdit, FaTrash, FaPrint, FaEye } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import logo from '../../../dist/assets/logo.png';
-import prepared from '../../../dist/assets/amnda.jpg';
-import auth from '../../../dist/assets/auth.png'
+import logo from '../../../public/assets/logo.png';
+import prepared from '../../../public/assets/amnda.jpg';
+import auth from '../../../public/assets/auth.png'
 
 // Validation schema
 const schema = yup.object().shape({
