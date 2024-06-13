@@ -21,8 +21,8 @@ import { FaEdit, FaTrash, FaPrint, FaEye } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import logo from '../../../public/img/logo.jpeg'
 import stamp from '../../../public/img/logo.png';
-import prepared from '../../../public/img/prepared.jpg';
-import auth from '../../../public/img/auth.png'
+import prepared from '../../../public/img/amanda.png';
+import auth from '../../../public/img/authorize.png'
 
 // Validation schema
 const schema = yup.object().shape({
