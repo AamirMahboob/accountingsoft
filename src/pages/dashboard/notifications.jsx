@@ -19,7 +19,8 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../firebaseConfig';
 import { FaEdit, FaTrash, FaPrint, FaEye } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import logo from '../../../public/img/logo.png';
+import logo from '../../../public/img/logo.jpeg'
+import stamp from '../../../public/img/logo.png';
 import prepared from '../../../public/img/prepared.jpg';
 import auth from '../../../public/img/auth.png'
 
@@ -190,11 +191,11 @@ export function Notifications() {
             .header {
               display: flex;
               justify-content: space-between;
-
             }
-            .header, .footer {
-              text-align: center;
-              
+            .footer {
+               display:flex;
+               flex-direction:column;
+               gap: 5px;
             }
             .header img {
               height: 50px;
@@ -215,10 +216,10 @@ export function Notifications() {
             .text-right {
               text-align: right;
             }
-            h1{
+            h1 {
               font-size: 17px;
             }
-            .logo{
+            .logo {
               display: flex;
               justify-content: center;
               align-items: center;
@@ -230,8 +231,8 @@ export function Notifications() {
           <div class="container">
             <div class="header">
               <div class="logo">
-              <img src=${logo} alt="Platinum Marine Logo" />
-              <h1>PLATINUM MARINE WLL</h1>
+                <img src="${logo}" alt="Platinum Marine Logo" />
+                <h1>PLATINUM MARINE WLL</h1>
               </div>
               <h2>${salarySlip.monthYear}</h2>
             </div>
@@ -289,22 +290,46 @@ export function Notifications() {
             </table>
             
             <h2>TOTAL SALARY PAYABLE: ${salarySlip.netSalary}</h2>
-            <p></p>
             
             <div class="footer">
-              <p>Prepared By: <img src=${prepared} alt="Your Signature" width=100px height=30px /></p>
-              <p>Authorized By: <img src=${auth} width=100px height=30px  alt="Sunil's Signature" /></p>
+              <p>Prepared By: <img src="${prepared}" alt="Your Signature" width="100px" height="30px" /></p>
+              <p>Authorized By: <img src="${auth}" width="100px" height="30px" alt="Sunil's Signature" /></p>
               <p>Received by: ___________________</p>
-              <p>Platinum Marine Stamp</p>
+              <img src="${stamp}" alt="Platinum Marine Logo" width="100px" height="100px" />
             </div>
           </div>
         </body>
       </html>
     `);
-
+  
+    // Wait for images to load before printing
+    const waitForImagesToLoad = () => {
+      const images = printWindow.document.images;
+      let loadedCount = 0;
+      const totalImages = images.length;
+  
+      const imageLoaded = () => {
+        loadedCount += 1;
+        if (loadedCount === totalImages) {
+          printWindow.print();
+          printWindow.close();
+        }
+      };
+  
+      for (let img of images) {
+        if (img.complete) {
+          imageLoaded();
+        } else {
+          img.addEventListener('load', imageLoaded);
+          img.addEventListener('error', imageLoaded);
+        }
+      }
+    };
+  
     printWindow.document.close();
-    printWindow.print();
-};
+    waitForImagesToLoad();
+  };
+  
 
 
   const handleViewImage = (url) => {
