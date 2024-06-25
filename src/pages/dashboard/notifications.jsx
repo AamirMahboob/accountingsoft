@@ -71,7 +71,7 @@ export function Notifications() {
     fetchSalarySlips();
   }, []);
 
- useEffect(() => {
+  useEffect(() => {
     const parseNumber = (value) => isNaN(parseFloat(value)) ? 0 : parseFloat(value);
 
     const totalOtPayable = parseNumber(otHours) * parseNumber(otRatePerHour);
@@ -79,20 +79,20 @@ export function Notifications() {
     const netSalary = totalBasicPayable + totalOtPayable - parseNumber(deductions) - parseNumber(loansAdvances);
 
     console.log({
-        otHours: parseNumber(otHours),
-        otRatePerHour: parseNumber(otRatePerHour),
-        basicSalary: parseNumber(basicSalary),
-        deductions: parseNumber(deductions),
-        loansAdvances: parseNumber(loansAdvances),
-        totalOtPayable,
-        totalBasicPayable,
-        netSalary
+      otHours: parseNumber(otHours),
+      otRatePerHour: parseNumber(otRatePerHour),
+      basicSalary: parseNumber(basicSalary),
+      deductions: parseNumber(deductions),
+      loansAdvances: parseNumber(loansAdvances),
+      totalOtPayable,
+      totalBasicPayable,
+      netSalary
     });
 
     setValue('totalOtPayable', totalOtPayable);
     setValue('totalBasicPayable', totalBasicPayable);
     setValue('netSalary', netSalary);
-}, [basicSalary, otHours, otRatePerHour, deductions, loansAdvances, setValue]);
+  }, [basicSalary, otHours, otRatePerHour, deductions, loansAdvances, setValue]);
 
   const handleAddEditSalarySlip = async (data) => {
     setLoader(true);
@@ -125,7 +125,7 @@ export function Notifications() {
       setSalarySlips([...salarySlips, { ...newSalarySlip, id: docRef.id }]);
       toast.success("Added Successfully");
     }
-    
+
     setLoader(false);
     reset();
     setAttachments([]);
@@ -149,7 +149,7 @@ export function Notifications() {
       totalBasicPayable: salarySlip.totalBasicPayable,
       loansAdvances: salarySlip.loansAdvances
     });
-    
+
     setAttachments([]);
     setExistingAttachments(salarySlip.attachments || []);
     setEditIndex(index);
@@ -170,7 +170,7 @@ export function Notifications() {
   const handlePrint = (index) => {
     const salarySlip = salarySlips[index];
     const printWindow = window.open('', '', 'width=800,height=600');
-    
+  
     printWindow.document.write(`
       <html>
         <head>
@@ -189,113 +189,133 @@ export function Notifications() {
               box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             }
             .header {
-              display: flex;
-              justify-content: space-between;
-            }
-            .footer {
-               display:flex;
-               flex-direction:column;
-               gap: 5px;
+              text-align: center;
+              margin-bottom: 20px;
             }
             .header img {
               height: 50px;
             }
-            .table {
-              width: 100%;
-              border-collapse: collapse;
+            .header h1 {
+              font-size: 24px;
+              color: #0071c5;
+            }
+            .details, .deductions {
               margin-top: 20px;
             }
-            .table th, .table td {
+            .details table, .deductions table {
+              width: 100%;
+              border-collapse: collapse;
+            }
+            .details th, .details td, .deductions th, .deductions td {
               border: 1px solid #ccc;
               padding: 8px;
               text-align: left;
             }
-            .total {
-              font-weight: bold;
+            .details th, .deductions th {
+              background-color: #f2f2f2;
             }
-            .text-right {
-              text-align: right;
-            }
-            h1 {
-              font-size: 17px;
-            }
-            .logo {
+            .footer {
+              margin-top: 10px;
               display: flex;
-              justify-content: center;
-              align-items: center;
-              gap: 10px;
+              justify-content: space-between;
+            }
+            .footer img {
+              height: 30px;
+            }
+            .footer p {
+              margin: 0;
+            }
+            .pb{
+              display: flex;
+              flex-direction: column;
+              gap:20px;
             }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo">
-                <img src="${logo}" alt="Platinum Marine Logo" />
-                <h1>PLATINUM MARINE WLL</h1>
-              </div>
-              <h2>${salarySlip.monthYear}</h2>
+              <img src="${logo}" alt="Platinum Marine Logo" />
+              <h1>PLATINUM MARINE W.L.L.</h1>
+              
+              <hr />
             </div>
-            
-            <div>
-              <h2>Employee Details:</h2>
-              <p>Name: ${salarySlip.employeeName}</p>
-              <p>Designation: ${salarySlip.employeeDesignation}</p>
-              <p>Basic Salary: ${salarySlip.basicSalary}</p>
+  
+            <h3>Payslip for the month of ${salarySlip.monthYear}</h3>
+  
+            <div class="details">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Employee Details</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Name</td>
+                    <td>${salarySlip.employeeName}</td>
+                  </tr>
+                  <tr>
+                    <td>Designation</td>
+                    <td>${salarySlip.employeeDesignation}</td>
+                  </tr>
+                  <tr>
+                    <td>Basic Salary</td>
+                    <td>${salarySlip.basicSalary}</td>
+                  </tr>
+                  <tr>
+                    <td>Days Worked</td>
+                    <td>${salarySlip.daysWorked}</td>
+                  </tr>
+                  <tr>
+                    <td>OT Hours</td>
+                    <td>${salarySlip.otHours}</td>
+                  </tr>
+                  <tr>
+                    <td>OT Rate Per Hour</td>
+                    <td>${salarySlip.otRatePerHour}</td>
+                  </tr>
+                   
+                </tbody>
+              </table>
             </div>
-            
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Description</th>
-                  <th>Amount (BHD)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>DAYS WORKED</td>
-                  <td>${salarySlip.daysWorked}</td>
-                </tr>
-                <tr>
-                  <td>OT HOURS</td>
-                  <td>${salarySlip.otHours}</td>
-                </tr>
-                <tr>
-                  <td>OT RATE PER HOUR</td>
-                  <td>${salarySlip.otRatePerHour}</td>
-                </tr>
-                <tr>
-                  <td>TOTAL OT PAYABLE</td>
-                  <td>${salarySlip.totalOtPayable}</td>
-                </tr>
-                <tr>
-                  <td>TOTAL BASIC PAYABLE</td>
-                  <td>${salarySlip.totalBasicPayable}</td>
-                </tr>
-              </tbody>
-            </table>
-            
-            <h2>DEDUCTIONS</h2>
-            <table class="table">
-              <tbody>
-                <tr>
-                  <td>LOANS/ADVANCES</td>
-                  <td>${salarySlip.loansAdvances}</td>
-                </tr>
-                <tr class="total">
-                  <td>TOTAL DEDUCTIONS</td>
-                  <td>${salarySlip.deductions}</td>
-                </tr>
-              </tbody>
-            </table>
-            
-            <h2>TOTAL SALARY PAYABLE: ${salarySlip.netSalary}</h2>
-            
+  
+            <h3>Deductions</h3>
+            <div class="deductions">
+              <table>
+                <tbody>
+                  <tr>
+                    <td>Loans/Advances</td>
+                    <td>${salarySlip.loansAdvances}</td>
+                  </tr>
+                  <tr>
+                    <td>Total Deductions</td>
+                    <td>${salarySlip.deductions}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+  
+            <h3>Total Salary Payable: ${salarySlip.netSalary}</h3>
+  
             <div class="footer">
-              <p>Prepared By: <img src="${prepared}" alt="Your Signature" width="100px" height="30px" /></p>
-              <p>Authorized By: <img src="${auth}" width="100px" height="30px" alt="Sunil's Signature" /></p>
-              <p>Received by: ___________________</p>
-              <img src="${stamp}" alt="Platinum Marine Logo" width="100px" height="100px" />
+              <div class='pb'>
+              <div>
+              <p>Prepared By:</p>
+              <img src="${prepared}" alt="Prepared Signature" />
+            </div>
+            <div>
+              <p>Authorized By:</p>
+              <img src="${auth}" alt="Authorized Signature" />
+            </div>
+              </div>
+              <div>
+                <p>Received By: ___________________</p>
+              </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+              <img src="${stamp}" alt="Stamp" width="100px" height="100px" />
             </div>
           </div>
         </body>
@@ -332,6 +352,7 @@ export function Notifications() {
   
 
 
+
   const handleViewImage = (url) => {
     setSelectedAttachment(url);
     setOpenImageDialog(true);
@@ -345,7 +366,7 @@ export function Notifications() {
         </Typography>
         <Button onClick={() => setOpenDialog(true)}>Add Salary Slip</Button>
       </div>
-      
+
       {loader ? (
         <div className="flex justify-center items-center">
           <Spinner className="h-12 w-12" />
@@ -366,7 +387,7 @@ export function Notifications() {
                     <th className="py-2 px-4 border-b">Deductions</th>
                     <th className="py-2 px-4 border-b">Net Salary</th>
                     <th className="py-2 px-4 border-b">Attachments</th>
-                   
+
                     <th className="py-2 px-4 border-b">Actions</th>
                   </tr>
                 </thead>
@@ -374,16 +395,16 @@ export function Notifications() {
                   {salarySlips.map((slip, index) => (
                     <tr key={slip.id}>
                       <td className="py-2 px-4 border-b">{slip.employeeName}</td>
-                    <th className="py-2 px-4 border-b">{slip.employeeDesignation}</th>
+                      <th className="py-2 px-4 border-b">{slip.employeeDesignation}</th>
                       <td className="py-2 px-4 border-b">{slip.monthYear}</td>
                       <td className="py-2 px-4 border-b">{slip.basicSalary}</td>
                       <td className="py-2 px-4 border-b">{slip.deductions}</td>
                       <td className="py-2 px-4 border-b">{slip.netSalary}</td>
                       <td>{slip.attachments.map((url, idx) => (
-                            <Button key={idx} variant="text" color="teal" onClick={() => handleViewImage(url)}>
-                              <FaEye />
-                            </Button>
-                          ))}</td>
+                        <Button key={idx} variant="text" color="teal" onClick={() => handleViewImage(url)}>
+                          <FaEye />
+                        </Button>
+                      ))}</td>
                       <td className="py-2 px-4 border-b">
                         <div className="flex space-x-2">
                           <Button variant="text" color="blue" onClick={() => handleEdit(index)}>
@@ -395,7 +416,7 @@ export function Notifications() {
                           <Button variant="text" color="green" onClick={() => handlePrint(index)}>
                             <FaPrint />
                           </Button>
-                          
+
                         </div>
                       </td>
                     </tr>
@@ -406,7 +427,7 @@ export function Notifications() {
           </CardBody>
         </Card>
       )}
-      
+
       <Dialog open={openDialog} handler={() => setOpenDialog(!openDialog)}>
         <DialogHeader>{editIndex !== null ? 'Edit Salary Slip' : 'Add Salary Slip'}</DialogHeader>
         <DialogBody className='max-h-[70vh] overflow-y-auto'>
@@ -449,30 +470,30 @@ export function Notifications() {
                 {errors.monthYear && <p className="text-red-500 text-sm">{errors.monthYear.message}</p>}
               </div>
               <div >
-              <div>
-                <label htmlFor="basicSalary" className="block text-sm font-medium text-gray-700">
-                  Basic Salary
-                </label>
-                <Controller
-                  name="basicSalary"
-                  control={control}
-                  defaultValue=""
-                  render={({ field }) => <Input type="number" {...field} id="basicSalary" />}
-                />
-                {errors.basicSalary && <p className="text-red-500 text-sm">{errors.basicSalary.message}</p>}
-              </div>
-              <div>
-                <label htmlFor="deductions" className="block text-sm font-medium text-gray-700">
-                  Deductions
-                </label>
-                <Controller
-                  name="deductions"
-                  control={control}
-                  defaultValue=""
-                  render={({ field }) => <Input type="number" {...field} id="deductions" />}
-                />
-                {errors.deductions && <p className="text-red-500 text-sm">{errors.deductions.message}</p>}
-              </div>
+                <div>
+                  <label htmlFor="basicSalary" className="block text-sm font-medium text-gray-700">
+                    Basic Salary
+                  </label>
+                  <Controller
+                    name="basicSalary"
+                    control={control}
+                    defaultValue=""
+                    render={({ field }) => <Input type="number" {...field} id="basicSalary" />}
+                  />
+                  {errors.basicSalary && <p className="text-red-500 text-sm">{errors.basicSalary.message}</p>}
+                </div>
+                <div>
+                  <label htmlFor="deductions" className="block text-sm font-medium text-gray-700">
+                    Deductions
+                  </label>
+                  <Controller
+                    name="deductions"
+                    control={control}
+                    defaultValue=""
+                    render={({ field }) => <Input type="number" {...field} id="deductions" />}
+                  />
+                  {errors.deductions && <p className="text-red-500 text-sm">{errors.deductions.message}</p>}
+                </div>
               </div>
               <div>
                 <label htmlFor="daysWorked" className="block text-sm font-medium text-gray-700">
@@ -555,7 +576,7 @@ export function Notifications() {
                 variant="text"
                 color="blue"
                 onClick={() => setOpenDialog(false)}
-                
+
               >
                 Cancel
               </Button>
