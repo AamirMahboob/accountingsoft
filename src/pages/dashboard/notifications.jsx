@@ -189,6 +189,8 @@ export function Notifications() {
               box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             }
             .header {
+              display: flex;
+              justify-content: space-between;
               text-align: center;
               margin-bottom: 20px;
             }
@@ -230,18 +232,20 @@ export function Notifications() {
               flex-direction: column;
               gap:20px;
             }
+             
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <img src="${logo}" alt="Platinum Marine Logo" />
-              <h1>PLATINUM MARINE W.L.L.</h1>
+              <img  src="${logo}" alt="Platinum Marine Logo"  width:200px />
+              <h1 style="margin-right:150px" class='plat' >PLATINUM MARINE W.L.L.</h1>
               
-              <hr />
+             
             </div>
+            <hr style="margin-top:-10px" />
   
-            <h3>Payslip for the month of ${salarySlip.monthYear}</h3>
+            <h3 style="margin-left:150px;" >Payslip for the month of ${salarySlip.monthYear}</h3>
   
             <div class="details">
               <table>
@@ -276,14 +280,21 @@ export function Notifications() {
                     <td>OT Rate Per Hour</td>
                     <td>${salarySlip.otRatePerHour}</td>
                   </tr>
+
                    
                 </tbody>
               </table>
             </div>
   
-            <h3>Deductions</h3>
-            <div class="deductions">
+             
+            <div style="margin-top:50px" class="deductions">
               <table>
+              <thead>
+              <tr>
+                <th>Deductions</th>
+                <th></th>
+              </tr>
+            </thead>
                 <tbody>
                   <tr>
                     <td>Loans/Advances</td>
@@ -297,7 +308,7 @@ export function Notifications() {
               </table>
             </div>
   
-            <h3>Total Salary Payable: ${salarySlip.netSalary}</h3>
+            <h3 style="margin-top:50px;">Total Salary Payable: ${salarySlip.netSalary}</h3>
   
             <div class="footer">
               <div class='pb'>
@@ -311,13 +322,18 @@ export function Notifications() {
             </div>
               </div>
               <div>
-                <p>Received By: ___________________</p>
+                <p style="text-align: center; margin-right:240px">Received By:</p>
               </div>
             </div>
-            <div style="text-align: center; margin-top: 20px;">
+            <div style="text-align: center; margin-top:-80px;">
               <img src="${stamp}" alt="Stamp" width="100px" height="100px" />
             </div>
+            <hr style="margin-top:90px"   />
+  
+            <p style="margin-left:150px;" >Po Box- 51161, Al suqayyah, Kingdom Of Bahrain</p>
+  
           </div>
+          
         </body>
       </html>
     `);
