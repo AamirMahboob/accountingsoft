@@ -35,6 +35,8 @@ const schema = yup.object().shape({
   otHours: yup.number().required('OT Hours are required'),
   otRatePerHour: yup.number().required('OT Rate Per Hour is required'),
   loansAdvances: yup.number().required('Loans/Advances are required'),
+  foodAllowance: yup.number().required('Food Allowance are required')
+
 });
 
 export function Notifications() {
@@ -57,6 +59,7 @@ export function Notifications() {
   const otRatePerHour = useWatch({ control, name: 'otRatePerHour' });
   const deductions = useWatch({ control, name: 'deductions' });
   const loansAdvances = useWatch({ control, name: 'loansAdvances' });
+  const foodAllowance = useWatch({ control, name: 'foodAllowance' });
 
   useEffect(() => {
     const fetchSalarySlips = async () => {
@@ -76,7 +79,7 @@ export function Notifications() {
 
     const totalOtPayable = parseNumber(otHours) * parseNumber(otRatePerHour);
     const totalBasicPayable = parseNumber(basicSalary);
-    const netSalary = totalBasicPayable + totalOtPayable - parseNumber(deductions) - parseNumber(loansAdvances);
+    const netSalary = totalBasicPayable + totalOtPayable - parseNumber(deductions) - parseNumber(loansAdvances) + parseNumber(foodAllowance);
 
     console.log({
       otHours: parseNumber(otHours),
@@ -92,7 +95,7 @@ export function Notifications() {
     setValue('totalOtPayable', totalOtPayable);
     setValue('totalBasicPayable', totalBasicPayable);
     setValue('netSalary', netSalary);
-  }, [basicSalary, otHours, otRatePerHour, deductions, loansAdvances, setValue]);
+  }, [basicSalary, otHours, otRatePerHour, deductions, loansAdvances,foodAllowance, setValue]);
 
   const handleAddEditSalarySlip = async (data) => {
     setLoader(true);
@@ -147,7 +150,9 @@ export function Notifications() {
       otRatePerHour: salarySlip.otRatePerHour,
       totalOtPayable: salarySlip.totalOtPayable,
       totalBasicPayable: salarySlip.totalBasicPayable,
-      loansAdvances: salarySlip.loansAdvances
+      loansAdvances: salarySlip.loansAdvances,
+      foodAllowance: salarySlip.foodAllowance,
+
     });
 
     setAttachments([]);
@@ -279,6 +284,10 @@ export function Notifications() {
                   <tr>
                     <td>OT Rate Per Hour</td>
                     <td>${salarySlip.otRatePerHour}</td>
+                  </tr>
+                  <tr>
+                    <td>Food Allowance</td>
+                    <td>${salarySlip.foodAllowance}</td>
                   </tr>
 
                    
@@ -558,6 +567,18 @@ export function Notifications() {
                   render={({ field }) => <Input type="number" {...field} id="loansAdvances" />}
                 />
                 {errors.loansAdvances && <p className="text-red-500 text-sm">{errors.loansAdvances.message}</p>}
+              </div>
+              <div>
+                <label htmlFor="foodAllowance" className="block text-sm font-medium text-gray-700">
+                  Food Allowance
+                </label>
+                <Controller
+                  name="foodAllowance"
+                  control={control}
+                  defaultValue=""
+                  render={({ field }) => <Input type="number" {...field} id="foodAllowance" />}
+                />
+                {errors.foodAllowance && <p className="text-red-500 text-sm">{errors.foodAllowance.message}</p>}
               </div>
               <div>
                 <label htmlFor="attachments" className="block text-sm font-medium text-gray-700">
